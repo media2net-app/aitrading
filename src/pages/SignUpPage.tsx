@@ -72,6 +72,7 @@ export default function SignUpPage() {
     if (!validate()) return
 
     try {
+      console.log('Submitting form with data:', { name, email, motivation, answers })
       const response = await fetch('http://localhost:3001/api/signup', {
         method: 'POST',
         headers: {
@@ -85,9 +86,12 @@ export default function SignUpPage() {
         })
       })
 
+      console.log('Response status:', response.status)
       const data = await response.json()
+      console.log('Response data:', data)
 
       if (data.success) {
+        console.log('Setting submitted to true')
         setSubmitted(true)
       } else {
         setError(data.message || 'Er is een fout opgetreden bij het verzenden van je aanmelding.')
@@ -99,6 +103,7 @@ export default function SignUpPage() {
   }
 
   if (submitted) {
+    console.log('Rendering success page')
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-dark-900 px-4">
         <div className="w-full max-w-md rounded-xl border border-dark-600 bg-dark-800 p-8 shadow-xl text-center">

@@ -249,15 +249,19 @@ const HeroHeader = () => {
               <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
                 <Button
                   asChild
+                  variant="default"
                   size="sm"
-                  className={cn(isScrolled && 'lg:hidden !text-white')}
+                  className={cn(isScrolled && 'lg:hidden')}
+                  style={{ color: 'white' }}
                 >
                   <Link to="/signup"><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
                 </Button>
                 <Button
                   asChild
+                  variant="default"
                   size="sm"
-                  className={cn(isScrolled ? 'lg:inline-flex !text-white' : 'hidden')}
+                  className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}
+                  style={{ color: 'white' }}
                 >
                   <Link to="/signup"><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
                 </Button>
