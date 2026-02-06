@@ -121,20 +121,14 @@ export default function HomePage() {
             Klaar om te starten?
           </h2>
           <p className="mt-4 text-gray-400">
-            Aanmelden voor toelating en starten met de AI bot voor goud (XAU/USD)—gemiddeld 94% winst op 5m en 15m.
+            Aanmelden voor toelating en starten met de AI bot voor XAU/USD—gemiddeld 94% winst op 5m en 15m.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               to="/signup"
-              className="inline-flex rounded-lg bg-accent px-8 py-4 text-base font-semibold text-dark-900 shadow-lg transition hover:bg-accent-hover"
+              className="inline-flex rounded-lg bg-accent px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-accent-hover"
             >
-              Aanmelden voor toelating
-            </Link>
-            <Link
-              to="/login"
-              className="text-gray-400 hover:text-white"
-            >
-              Al account? Inloggen
+              <span className="font-bold">Ja</span>, ik wil mij aanmelden
             </Link>
           </div>
         </div>
@@ -144,12 +138,17 @@ export default function HomePage() {
       <footer className="border-t border-dark-600 bg-dark-800/50 py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <span className="text-sm text-gray-500">© AI Trading Software</span>
+            <span className="text-sm text-gray-500">© AI Trading.software</span>
             <div className="flex gap-6 text-sm text-gray-400">
               <Link to="/" className="hover:text-white">Home</Link>
-              <Link to="/login" className="hover:text-white">Login</Link>
-              <Link to="/signup" className="hover:text-white">Aanmelden</Link>
+              <Link to="/login" className="hover:text-white">Mijn account</Link>
+              <Link to="/signup" className="hover:text-white">Ja, ik wil mij aanmelden</Link>
             </div>
+          </div>
+          <div className="mt-6 text-center">
+            <p className="text-xs text-gray-500 max-w-4xl mx-auto">
+              AI Trading.software is een tool ontwikkeld door Media2Net. Wij geven geen financieel advies, en zijn niet aansprakelijk voor verliezen.
+            </p>
           </div>
         </div>
       </footer>

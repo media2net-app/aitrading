@@ -38,7 +38,7 @@ export default function LoginPage() {
     if (success) {
       navigate('/dashboard', { replace: true })
     } else {
-      setError('Inloggen mislukt. Controleer je gegevens.')
+      setError('Mijn account mislukt. Controleer je gegevens.')
     }
   }
 
@@ -47,10 +47,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-xl border border-dark-600 bg-dark-800 p-8 shadow-xl">
         <div className="mb-8 text-center">
           <Link to="/" className="text-2xl font-semibold text-white">
-            AI Trading
+            AI Trading.software
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-white">Inloggen</h1>
+        <h1 className="text-2xl font-bold text-white">Mijn account</h1>
         <p className="mt-2 text-gray-400">
           Log in om toegang te krijgen tot je dashboard.
         </p>
@@ -93,15 +93,15 @@ export default function LoginPage() {
           </div>
           <button
             type="submit"
-            className="w-full rounded-lg bg-accent py-3.5 font-semibold text-dark-900 transition hover:bg-accent-hover"
+            className="w-full rounded-lg bg-accent py-3.5 font-semibold text-white transition hover:bg-accent-hover"
           >
-            Inloggen
+            Mijn account
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-500">
           Nog geen account?{' '}
           <Link to="/signup" className="text-accent hover:underline">
-            Aanmelden voor toelating
+            <span className="font-bold">Ja</span>, ik wil mij aanmelden
           </Link>
         </p>
         <p className="mt-4 text-center">

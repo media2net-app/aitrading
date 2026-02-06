@@ -11,7 +11,7 @@ export default function DashboardHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-dark-600 bg-dark-800/80 px-6 backdrop-blur">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-dark-600 bg-dark-800 px-6">
       <div className="text-sm text-gray-400">Dashboard</div>
       <div className="flex items-center gap-4">
         <span className="text-sm text-gray-300">{userEmail}</span>

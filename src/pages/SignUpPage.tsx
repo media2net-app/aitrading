@@ -24,7 +24,6 @@ type QuestionName = (typeof questions)[number]['name']
 export default function SignUpPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [motivation, setMotivation] = useState('')
   const [answers, setAnswers] = useState<Record<QuestionName, 'ja' | 'nee' | ''>>({
     capital: '',
@@ -52,14 +51,6 @@ export default function SignUpPage() {
       setError('Vul een geldig e-mailadres in.')
       return false
     }
-    if (!password) {
-      setError('Vul een wachtwoord in.')
-      return false
-    }
-    if (password.length < 6) {
-      setError('Wachtwoord moet minimaal 6 tekens zijn.')
-      return false
-    }
     if (!motivation.trim()) {
       setError('Vul je motivatie in.')
       return false
@@ -76,11 +67,35 @@ export default function SignUpPage() {
     return true
   }
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!validate()) return
-    // Hier zou je de data naar een backend sturen; nu alleen lokaal bevestigen
-    setSubmitted(true)
+
+    try {
+      const response = await fetch('http://localhost:3001/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          motivation,
+          answers
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setSubmitted(true)
+      } else {
+        setError(data.message || 'Er is een fout opgetreden bij het verzenden van je aanmelding.')
+      }
+    } catch (error) {
+      console.error('Submit error:', error)
+      setError('Er is een fout opgetreden bij het verzenden. Probeer het opnieuw.')
+    }
   }
 
   if (submitted) {
@@ -90,17 +105,12 @@ export default function SignUpPage() {
           <div className="mb-6 text-4xl text-accent">✓</div>
           <h1 className="text-2xl font-bold text-white">Aanvraag ontvangen</h1>
           <p className="mt-4 text-gray-400">
-            Je aanmelding is bij ons binnen. We beoordelen je aanvraag (toelating) en nemen
-            contact met je op zodra er een besluit is. Je kunt nog niet inloggen tot je
-            bent toegelaten.
+            Bedankt voor je aanmelden en interesse in de AI Trading.software bot.
+          </p>
+          <p className="mt-3 text-gray-400">
+            We nemen je aanmelding in behandeling, je ontvangt binnen 48 uur bericht terug of je geselecteerd bent of niet
           </p>
           <div className="mt-8 flex flex-col gap-3">
-            <Link
-              to="/login"
-              className="rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-center font-medium text-white transition hover:bg-dark-600"
-            >
-              Naar inloggen
-            </Link>
             <Link to="/" className="text-sm text-gray-400 hover:text-white">
               ← Terug naar home
             </Link>
@@ -115,14 +125,17 @@ export default function SignUpPage() {
       <div className="w-full max-w-lg rounded-xl border border-dark-600 bg-dark-800 p-8 shadow-xl">
         <div className="mb-8 text-center">
           <Link to="/" className="text-2xl font-semibold text-white">
-            AI Trading
+            AI Trading.software
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-white">Aanmelden voor toelating</h1>
+        <h1 className="text-2xl font-bold text-white">Ja, ik wil mij aanmelden</h1>
         <p className="mt-2 text-gray-400">
           Vul onderstaande gegevens en motivatie in. We krijgen veel aanmeldingen en werken
           alleen met een selectie gedisciplineerde mensen—om het succes van de bot te behouden
           en omdat je moet weten wat je doet en bereid moet zijn onze coaching te volgen.
+        </p>
+        <p className="mt-2 text-sm text-amber-400">
+          Alle velden zijn verplicht
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
@@ -137,7 +150,7 @@ export default function SignUpPage() {
 
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-300">
-              Naam
+              Naam <span className="text-red-400">*</span>
             </label>
             <input
               id="name"
@@ -151,7 +164,7 @@ export default function SignUpPage() {
           </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-              E-mailadres
+              E-mailadres <span className="text-red-400">*</span>
             </label>
             <input
               id="email"
@@ -161,20 +174,6 @@ export default function SignUpPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="mt-2 block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white placeholder-gray-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               placeholder="naam@voorbeeld.nl"
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-              Wachtwoord (voor later inloggen na toelating)
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white placeholder-gray-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-              placeholder="Minimaal 6 tekens"
             />
           </div>
 
@@ -192,7 +191,7 @@ export default function SignUpPage() {
               value={motivation}
               onChange={(e) => setMotivation(e.target.value)}
               className="mt-2 block w-full resize-y rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white placeholder-gray-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-              placeholder="Bijv.: Ik wil graag met de AI bot voor goud handelen, ben bereid wekelijks te overleggen en de strategie strikt te volgen..."
+              placeholder="Vertel ons waarom je gekwalificeerd bent..."
             />
             {motivation.trim().length > 0 && motivation.trim().length < 50 && (
               <p className="mt-1 text-xs text-amber-400">
@@ -247,7 +246,7 @@ export default function SignUpPage() {
         <p className="mt-6 text-center text-sm text-gray-500">
           Heb je al een account?{' '}
           <Link to="/login" className="text-accent hover:underline">
-            Inloggen
+            Mijn account
           </Link>
         </p>
         <p className="mt-4 text-center">

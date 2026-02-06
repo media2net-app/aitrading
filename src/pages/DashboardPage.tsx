@@ -14,7 +14,7 @@ export default function DashboardPage() {
 
       <DashboardKpiCards />
 
-      <section className="rounded-xl border border-dark-600 bg-dark-800/50 p-6">
+      <section id="equity" className="rounded-xl border border-dark-600 bg-dark-800/50 p-6">
         <h2 className="text-lg font-semibold text-white">Equity curve</h2>
         <p className="mt-1 text-sm text-gray-400">
           Performance over tijd (placeholder – koppel later aan echte data)
@@ -22,7 +22,7 @@ export default function DashboardPage() {
         <DashboardChart />
       </section>
 
-      <section className="rounded-xl border border-dark-600 bg-dark-800/50 p-6">
+      <section id="trades" className="rounded-xl border border-dark-600 bg-dark-800/50 p-6">
         <h2 className="text-lg font-semibold text-white">Recente trades</h2>
         <p className="mt-1 text-sm text-gray-400">
           Laatste activiteit (placeholder – koppel later aan echte data)

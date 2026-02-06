@@ -90,7 +90,7 @@ export function HeroSection() {
                     className="bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border border-white/5 p-1 pl-4 shadow-md shadow-black/5 transition-all duration-300 hover:bg-background"
                   >
                     <span className="text-sm text-foreground">
-                      AI Bot voor Goud (XAU/USD)
+                      AI Bot voor XAU/USD
                     </span>
                     <span className="block h-4 w-0.5 border-l border-white/10 bg-white/10" />
                     <div className="size-6 overflow-hidden rounded-full bg-background duration-500 group-hover:bg-muted">
@@ -106,7 +106,7 @@ export function HeroSection() {
                   </Link>
 
                   <h1 className="mx-auto mt-8 max-w-4xl text-balance text-6xl font-bold text-foreground md:text-7xl lg:mt-16 xl:text-[5.25rem]">
-                    AI Trading Bot voor Goud
+                    AI Trading.software Bot voor XAU/USD
                   </h1>
                   <p className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">
                     Goud (XAU/USD) beweegt volop. Onze AI bot handelt op korte timeframes (5m en 15m)
@@ -135,24 +135,13 @@ export function HeroSection() {
                     <Button
                       asChild
                       size="lg"
-                      className="rounded-xl px-5 text-base"
+                      className="rounded-xl px-5 text-base !text-white"
                     >
-                      <Link to="/login">
-                        <span className="text-nowrap">Start Building</span>
+                      <Link to="/signup">
+                        <span className="text-nowrap"><span className="font-bold">Ja</span>, ik wil mij aanmelden</span>
                       </Link>
                     </Button>
                   </div>
-                  <Button
-                    key={2}
-                    asChild
-                    size="lg"
-                    variant="ghost"
-                    className="h-10 rounded-xl px-5"
-                  >
-                    <Link to="/#hoe-werkt-het">
-                      <span className="text-nowrap">Request a demo</span>
-                    </Link>
-                  </Button>
                 </AnimatedGroup>
               </div>
             </div>
@@ -165,10 +154,8 @@ export function HeroSection() {
 }
 
 const menuItems = [
-  { name: 'Features', href: '/#features' },
-  { name: 'Solution', href: '/#hoe-werkt-het' },
-  { name: 'Pricing', href: '/#pricing' },
-  { name: 'About', href: '/#about' },
+  { name: 'Wat is de AI Trading Bot?', href: '/#features' },
+  { name: 'Hoe het werkt', href: '/#hoe-werkt-het' },
 ]
 
 const HeroHeader = () => {
@@ -216,12 +203,20 @@ const HeroHeader = () => {
               <ul className="flex gap-8 text-sm">
                 {menuItems.map((item, index) => (
                   <li key={index}>
-                    <Link
-                      to={item.href}
+                    <a
+                      href={item.href}
                       className="block text-muted-foreground duration-150 hover:text-foreground"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        const targetId = item.href.replace('/#', '')
+                        const element = document.getElementById(targetId)
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth' })
+                        }
+                      }}
                     >
                       <span>{item.name}</span>
-                    </Link>
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -232,12 +227,21 @@ const HeroHeader = () => {
                 <ul className="space-y-6 text-base">
                   {menuItems.map((item, index) => (
                     <li key={index}>
-                      <Link
-                        to={item.href}
+                      <a
+                        href={item.href}
                         className="block text-muted-foreground duration-150 hover:text-foreground"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          const targetId = item.href.replace('/#', '')
+                          const element = document.getElementById(targetId)
+                          if (element) {
+                            element.scrollIntoView({ behavior: 'smooth' })
+                          }
+                          setMenuState(false)
+                        }}
                       >
                         <span>{item.name}</span>
-                      </Link>
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -245,25 +249,17 @@ const HeroHeader = () => {
               <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
                 <Button
                   asChild
-                  variant="outline"
                   size="sm"
-                  className={cn(isScrolled && 'lg:hidden')}
+                  className={cn(isScrolled && 'lg:hidden !text-white')}
                 >
-                  <Link to="/login">Login</Link>
+                  <Link to="/signup"><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
                 </Button>
                 <Button
                   asChild
                   size="sm"
-                  className={cn(isScrolled && 'lg:hidden')}
+                  className={cn(isScrolled ? 'lg:inline-flex !text-white' : 'hidden')}
                 >
-                  <Link to="/signup">Sign Up</Link>
-                </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}
-                >
-                  <Link to="/signup">Get Started</Link>
+                  <Link to="/signup"><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
                 </Button>
               </div>
             </div>
@@ -278,6 +274,6 @@ const Logo = ({ className }: { className?: string }) => (
   <span
     className={cn('text-xl font-semibold text-foreground', className)}
   >
-    AI Trading
+    AI Trading.software
   </span>
 )
