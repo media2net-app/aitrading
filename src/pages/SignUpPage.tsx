@@ -3,11 +3,6 @@ import { Link } from 'react-router-dom'
 
 const questions = [
   {
-    id: 'capital',
-    label: 'Ben je bereid te starten met minimaal €500 startkapitaal?',
-    name: 'capital',
-  },
-  {
     id: 'discipline',
     label: 'Heb je discipline en wil je een vaste strategie volgen?',
     name: 'discipline',
@@ -16,6 +11,16 @@ const questions = [
     id: 'calls',
     label: 'Ben je bereid wekelijks een 1-op-1 call te hebben om je voortgang te bespreken?',
     name: 'calls',
+  },
+  {
+    id: 'forex',
+    label: 'Ben je bekend met Forex / Daytraden?',
+    name: 'forex',
+  },
+  {
+    id: 'capital',
+    label: 'Ben jij bereid om naast een minimaal startkapitaal van 500 euro om te traden, een eenmalige investering van 750 euro incl. BTW te doen voor het installeren en implementeren voor jou maatwerk AI Trading bot?',
+    name: 'capital',
   },
 ] as const
 
@@ -29,6 +34,7 @@ export default function SignUpPage() {
     capital: '',
     discipline: '',
     calls: '',
+    forex: '',
   })
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -59,8 +65,8 @@ export default function SignUpPage() {
       setError('Je motivatie moet minimaal 50 tekens bevatten.')
       return false
     }
-    if (answers.capital !== 'ja' || answers.discipline !== 'ja' || answers.calls !== 'ja') {
-      setError('Je moet op alle drie de vragen met "Ja" antwoorden om in aanmerking te komen voor toelating.')
+    if (answers.capital !== 'ja' || answers.discipline !== 'ja' || answers.calls !== 'ja' || answers.forex !== 'ja') {
+      setError('Je moet op alle vier de vragen met "Ja" antwoorden om in aanmerking te komen voor toelating.')
       return false
     }
     setError('')
@@ -143,13 +149,21 @@ export default function SignUpPage() {
         </div>
         <h1 className="text-2xl font-bold text-white">Ja, ik wil mij aanmelden</h1>
         <p className="mt-2 text-gray-400">
-          Vul onderstaande gegevens en motivatie in. We krijgen veel aanmeldingen en werken
-          alleen met een selectie gedisciplineerde mensen—om het succes van de bot te behouden
-          en omdat je moet weten wat je doet en bereid moet zijn onze coaching te volgen.
+          Vul onderstaande gegevens en motivatie in. Er is veel belangstelling getoond voor de AI Trading bot, en we hebben besloten selectief te zijn—om het succes van de bot te behouden en omdat je moet weten wat je doet en bereid moet zijn onze coaching te volgen.
         </p>
         <p className="mt-2 text-sm text-amber-400">
           Alle velden zijn verplicht
         </p>
+
+        <div
+          role="note"
+          className="mt-6 rounded-lg border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-gray-300"
+        >
+          <p className="font-medium text-accent">Let op</p>
+          <p className="mt-1 leading-relaxed">
+            We hebben plek voor maximaal 3 personen, dit doen we bewust om de kwaliteit van het coachen en de AI bot zo hoog mogelijk te houden. We willen enkel een community met serieuze leden die online geld willen verdienen met de AI trade bot.
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           {error && (
@@ -214,10 +228,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="border-t border-dark-600 pt-6">
-            <p className="text-sm font-medium text-gray-300">
-              Beantwoord onderstaande vragen (alle drie met Ja vereist voor toelating):
-            </p>
-            <ul className="mt-4 space-y-5">
+            <ul className="space-y-5">
               {questions.map(({ id, label, name }) => (
                 <li key={id}>
                   <p className="text-sm text-white">{label}</p>

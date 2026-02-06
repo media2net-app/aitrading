@@ -60,9 +60,10 @@ export class EmailService {
       
       <h3>Antwoorden op vragen:</h3>
       <ul>
-        <li><strong>Startkapitaal €500+:</strong> ${signupData.answers.capital}</li>
         <li><strong>Discipline en strategie:</strong> ${signupData.answers.discipline}</li>
         <li><strong>Wekelijkse calls:</strong> ${signupData.answers.calls}</li>
+        <li><strong>Bekend met Forex / Daytraden:</strong> ${signupData.answers.forex}</li>
+        <li><strong>Min. startkapitaal €500 + eenmalig €750 incl. BTW (maatwerk bot):</strong> ${signupData.answers.capital}</li>
       </ul>
       
       <p><strong>Aanvraagdatum:</strong> ${new Date().toLocaleString('nl-NL')}</p>
@@ -76,9 +77,10 @@ export class EmailService {
       Motivatie: ${signupData.motivation}
       
       Antwoorden:
-      - Startkapitaal €500+: ${signupData.answers.capital}
       - Discipline en strategie: ${signupData.answers.discipline}
       - Wekelijkse calls: ${signupData.answers.calls}
+      - Bekend met Forex / Daytraden: ${signupData.answers.forex}
+      - Min. startkapitaal €500 + eenmalig €750 incl. BTW (maatwerk bot): ${signupData.answers.capital}
       
       Aanvraagdatum: ${new Date().toLocaleString('nl-NL')}
     `

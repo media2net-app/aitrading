@@ -251,19 +251,10 @@ const HeroHeader = () => {
                   asChild
                   variant="default"
                   size="sm"
-                  className={cn(isScrolled && 'lg:hidden')}
+                  className="w-full sm:w-auto"
                   style={{ color: 'white' }}
                 >
-                  <Link to="/signup"><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="default"
-                  size="sm"
-                  className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}
-                  style={{ color: 'white' }}
-                >
-                  <Link to="/signup"><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
+                  <Link to="/signup" onClick={() => setMenuState(false)}><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
                 </Button>
               </div>
             </div>
