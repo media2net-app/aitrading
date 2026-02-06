@@ -105,7 +105,7 @@ export function HeroSection() {
                     </div>
                   </Link>
 
-                  <h1 className="mx-auto mt-8 max-w-4xl text-balance text-6xl font-bold text-foreground md:text-7xl lg:mt-16 xl:text-[5.25rem]">
+                  <h1 className="mx-auto mt-8 max-w-4xl text-balance text-3xl font-bold leading-tight text-foreground sm:text-4xl md:mt-10 md:text-5xl lg:mt-16 lg:text-6xl xl:text-[3.5rem]">
                     AI Trading.software Bot voor XAU/USD
                   </h1>
                   <p className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">

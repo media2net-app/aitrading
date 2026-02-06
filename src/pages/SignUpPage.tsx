@@ -71,9 +71,11 @@ export default function SignUpPage() {
     e.preventDefault()
     if (!validate()) return
 
+    const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+    const signupUrl = `${apiBase}/api/signup`
+
     try {
-      console.log('Submitting form with data:', { name, email, motivation, answers })
-      const response = await fetch('/api/signup', {
+      const response = await fetch(signupUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,19 +88,25 @@ export default function SignUpPage() {
         })
       })
 
-      console.log('Response status:', response.status)
-      const data = await response.json()
-      console.log('Response data:', data)
+      let data: { success?: boolean; message?: string }
+      try {
+        data = await response.json()
+      } catch {
+        setError('De server reageert niet correct. Probeer het later opnieuw of neem contact met ons op.')
+        return
+      }
 
       if (data.success) {
-        console.log('Setting submitted to true')
         setSubmitted(true)
       } else {
-        setError(data.message || 'Er is een fout opgetreden bij het verzenden van je aanmelding.')
+        const message = data.message || (!response.ok
+          ? 'De aanmeldservice is tijdelijk niet bereikbaar. Probeer het later opnieuw of stuur een e-mail naar aitrading@media2net.nl.'
+          : 'Er is een fout opgetreden bij het verzenden van je aanmelding.')
+        setError(message)
       }
-    } catch (error) {
-      console.error('Submit error:', error)
-      setError('Er is een fout opgetreden bij het verzenden. Probeer het opnieuw.')
+    } catch (err) {
+      console.error('Submit error:', err)
+      setError('Er is een fout opgetreden bij het verzenden. Controleer je internetverbinding of probeer het later opnieuw.')
     }
   }
 
