@@ -242,12 +242,13 @@ const HeroHeader = () => {
               </ul>
             </div>
 
-            {/* Mobile: overlay onder header; desktop: inline nav */}
+            {/* Mobile: overlay onder header (ondoorzichtige achtergrond); desktop: inline nav */}
             <div
               className={cn(
                 'hidden flex-col gap-6 lg:flex lg:flex-row lg:items-center lg:w-fit',
                 'group-data-[state=active]:flex',
-                'fixed inset-0 z-20 border-t border-border/50 bg-background px-4 pb-8 shadow-lg',
+                'fixed inset-0 z-20 border-t border-border/50 px-4 pb-8 shadow-lg',
+                'bg-[hsl(var(--background))]',
                 'pt-[calc(env(safe-area-inset-top,0px)+4rem)]',
                 'lg:static lg:inset-auto lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pb-0 lg:shadow-none',
               )}
