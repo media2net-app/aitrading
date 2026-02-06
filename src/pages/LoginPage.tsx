@@ -99,7 +99,10 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-500">
-          Log in met chiel@media2net.nl en je wachtwoord.
+          Nog geen account?{' '}
+          <Link to="/signup" className="text-accent hover:underline">
+            Aanmelden voor toelating
+          </Link>
         </p>
         <p className="mt-4 text-center">
           <Link to="/" className="text-sm text-gray-400 hover:text-white">

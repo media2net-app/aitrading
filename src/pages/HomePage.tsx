@@ -3,36 +3,39 @@ import { HeroSection } from '@/components/ui/hero-section-1'
 
 const features = [
   {
-    title: 'Automatisch handelen',
-    description: 'De AI bot voert trades uit op basis van strategieën en marktdata, 24/7.',
+    title: 'XAU/USD (goud)',
+    description: 'De bot is gebouwd voor goud: het paar dat nu volop beweegt. Geen keuzestress—één focus voor maximale resultaten.',
     icon: '▸',
   },
   {
-    title: 'Signalen & analyses',
-    description: 'Krijg real-time handelssignalen en marktanalyses gegenereerd door AI.',
+    title: '5m & 15m timeframes',
+    description: 'Handel op korte intervallen (5 en 15 minuten) voor snelle, hoge winsten met onze bewezen strategie.',
     icon: '◈',
   },
   {
-    title: 'Backtesting',
-    description: 'Test strategieën op historische data voordat je live gaat.',
+    title: '94% gemiddelde winst',
+    description: 'Onze AI volgt een vaste strategie en behaalt gemiddeld 94% winst. Geen gokwerk—gedisciplineerde uitvoering.',
     icon: '◉',
   },
   {
     title: 'Risicobeheer',
-    description: 'Ingebouwde stop-loss, take-profit en positiegrootte op basis van risico.',
+    description: 'Stop-loss, take-profit en positiegrootte zijn ingebouwd. De bot handelt 24/5 binnen duidelijke regels—de forex- en aandelenmarkten zijn in het weekend gesloten.',
     icon: '◇',
   },
 ]
 
 const steps = [
-  { step: 1, title: 'Account aanmaken', text: 'Registreer en koppel je broker of exchange.' },
-  { step: 2, title: 'Strategie kiezen', text: 'Kies een AI-strategie of stel je eigen parameters in.' },
-  { step: 3, title: 'Start handelen', text: 'Activeer de bot en volg je prestaties in het dashboard.' },
+  { step: 1, title: 'Trading account bij broker', text: 'We helpen je met het opzetten van je trading account bij onze aangesloten brokerpartner—van registratie tot verificatie.' },
+  { step: 2, title: 'Software op je pc', text: 'We installeren op je pc: MetaTrader 5 voor het handelen, MQ5-implementatie, EA en onze zelf ontwikkelde AI Trade bot.' },
+  { step: 3, title: 'MetaTrader 5 op mobiel', text: 'We helpen je MetaTrader 5 op je mobiel te configureren, zodat je altijd live mee kunt kijken hoe je ervoor staat.' },
+  { step: 4, title: 'Demo-week (7 dagen)', text: 'Elk nieuw account draait 7 dagen test. We stemmen de bot af op jouw account; bij gemiddeld 90%+ winst over 7 dagen gaat je account live met de AI Bot.' },
+  { step: 5, title: 'Strategie afspreken', text: 'We spreken een duidelijke strategie met je af zodat je stap voor stap groeit. Start je met €500? Dan adviseren we max. 2% verlies per trade en focus op €100 winst per dag om te beginnen.' },
+  { step: 6, title: 'Wekelijkse 1-op-1 coaching', text: 'Elke week op een vast moment een videocall van 30 min om de voortgang en strategie te bespreken.' },
 ]
 
 const stats = [
-  { value: '10.000+', label: 'Actieve traders' },
-  { value: '50M+', label: 'Trades uitgevoerd' },
+  { value: '94%', label: 'Gem. winst' },
+  { value: 'XAU/USD', label: 'Goud (5m & 15m)' },
   { value: '99.9%', label: 'Uptime' },
 ]
 
@@ -42,7 +45,7 @@ export default function HomePage() {
       <HeroSection />
 
       {/* KPI strip */}
-      <section className="border-b border-dark-600 bg-dark-800/50 py-12">
+      <section className="border-b border-dark-600 bg-dark-800/50 pb-12 pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
             {stats.map(({ value, label }) => (
@@ -58,12 +61,13 @@ export default function HomePage() {
       {/* Features */}
       <section id="features" className="border-b border-dark-600 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold text-white sm:text-4xl">
-              Wat is AI Trading Software?
+              Wat is de AI Trading Bot?
             </h2>
             <p className="mt-4 text-gray-400">
-              Een AI trading bot die voor jou analyseert, signaleert en automatisch kan handelen.
+              Een AI bot die specifiek is gebouwd voor <strong className="text-gray-300">goud (XAU/USD)</strong> in Forex.
+              Goud beweegt momenteel sterk; door slim in te spelen op korte timeframes van <strong className="text-gray-300">5 en 15 minuten</strong> met onze vaste strategie pakt de bot hoge winsten. Gemiddeld behaalt de bot <strong className="text-accent">94% winst</strong>. Nieuw met Forex? De bot handelt voor je—je hoeft geen ervaring te hebben.
             </p>
           </div>
           <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2">
@@ -88,21 +92,17 @@ export default function HomePage() {
       {/* How it works */}
       <section id="hoe-werkt-het" className="border-b border-dark-600 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold text-white sm:text-4xl">
               Hoe het werkt
             </h2>
             <p className="mt-4 text-gray-400">
-              In drie stappen begin je met automatisch handelen.
+              Nadat je je hebt aangemeld en uit de selectie bent toegelaten, gaan we als volgt te werk:
             </p>
           </div>
-          <div className="mx-auto mt-16 grid max-w-4xl grid-cols-1 gap-10 md:grid-cols-3">
+          <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
             {steps.map(({ step, title, text }) => (
               <div key={step} className="relative text-center">
-                {/* Lijn loopt achter de cirkel door: lagere z-index */}
-                {step < 3 && (
-                  <div className="absolute left-1/2 top-7 z-0 hidden h-0.5 w-full bg-dark-500 md:block" aria-hidden />
-                )}
                 <div className="relative z-10 mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-dark-800 text-lg font-bold text-accent">
                   {step}
                 </div>
@@ -121,14 +121,20 @@ export default function HomePage() {
             Klaar om te starten?
           </h2>
           <p className="mt-4 text-gray-400">
-            Maak een account aan en ontdek wat de AI trading bot voor jou kan doen.
+            Aanmelden voor toelating en starten met de AI bot voor goud (XAU/USD)—gemiddeld 94% winst op 5m en 15m.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
-              to="/login"
+              to="/signup"
               className="inline-flex rounded-lg bg-accent px-8 py-4 text-base font-semibold text-dark-900 shadow-lg transition hover:bg-accent-hover"
             >
-              Login / Registreren
+              Aanmelden voor toelating
+            </Link>
+            <Link
+              to="/login"
+              className="text-gray-400 hover:text-white"
+            >
+              Al account? Inloggen
             </Link>
           </div>
         </div>
@@ -142,6 +148,7 @@ export default function HomePage() {
             <div className="flex gap-6 text-sm text-gray-400">
               <Link to="/" className="hover:text-white">Home</Link>
               <Link to="/login" className="hover:text-white">Login</Link>
+              <Link to="/signup" className="hover:text-white">Aanmelden</Link>
             </div>
           </div>
         </div>
