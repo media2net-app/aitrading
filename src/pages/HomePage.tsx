@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { HeroSection } from '@/components/ui/hero-section-1'
+import { CalculatorContent } from './CalculatorPage'
 
 const features = [
   {
@@ -40,6 +42,14 @@ const stats = [
 ]
 
 export default function HomePage() {
+  const { hash } = useLocation()
+  useEffect(() => {
+    if (hash === '#calculator') {
+      const el = document.getElementById('calculator')
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [hash])
+
   return (
     <div className="min-h-screen bg-dark-900">
       <HeroSection />
@@ -85,6 +95,26 @@ export default function HomePage() {
                 <p className="mt-3 text-gray-400">{description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Calculator & Simulator – uitleg trading */}
+      <section id="calculator" className="border-b border-dark-600 py-20">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+              Calculator &amp; Simulator
+            </h2>
+            <p className="mt-4 text-gray-400">
+              Hieronder zie je een <strong className="text-gray-300">uitleg in de praktijk</strong>: wat doen bedragen als startkapitaal, risico% en lot size, en welke winsten en verliezen je kunt verwachten op basis van je instellingen en winstpercentage. Je hoeft dit niet te begrijpen om met ons te starten — de <strong className="text-accent">AI Bot</strong> doet het handelen automatisch voor je. Maar het is wel goed om te weten wat de getallen betekenen en wat er kan gebeuren bij winst of verlies.
+            </p>
+            <p className="mt-4 text-gray-400">
+              Daarom is <strong className="text-gray-300">1-op-1 coaching voor strategie en begeleiding</strong> ook vereist. We adviseren ten alle tijden om rustig te beginnen en niet te veel risico te nemen: bij een winstpercentage van 90% heb je altijd met zo’n 10% verliestrades te maken. Als je te hoog inszet qua risico, kan één verliestrade je startkapitaal direct aantasten.
+            </p>
+          </div>
+          <div className="mt-10">
+            <CalculatorContent showTradingUitleg={false} />
           </div>
         </div>
       </section>
@@ -139,8 +169,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             <span className="text-sm text-gray-500">© AI Trading.software</span>
-            <div className="flex gap-6 text-sm text-gray-400">
+            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-400 sm:justify-end">
               <Link to="/" className="hover:text-white">Home</Link>
+              <Link to="/#calculator" className="hover:text-white">Calculator &amp; simulator</Link>
+              <Link to="/calculator" className="hover:text-white">Volledige calculator</Link>
               <Link to="/login" className="hover:text-white">Mijn account</Link>
               <Link to="/signup" className="hover:text-white">Ja, ik wil mij aanmelden</Link>
             </div>

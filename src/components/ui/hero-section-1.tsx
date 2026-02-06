@@ -137,8 +137,8 @@ export function HeroSection() {
                       size="lg"
                       className="rounded-xl px-5 text-base !text-white"
                     >
-                      <Link to="/signup">
-                        <span className="text-nowrap"><span className="font-bold">Ja</span>, ik wil mij aanmelden</span>
+                      <Link to="/#calculator">
+                        <span className="text-nowrap">Voorbeeld calculator instellingen bot winst/verlies</span>
                       </Link>
                     </Button>
                   </div>
@@ -155,6 +155,7 @@ export function HeroSection() {
 
 const menuItems = [
   { name: 'Wat is de AI Trading Bot?', href: '/#features' },
+  { name: 'Calculator & Simulator', href: '/#calculator' },
   { name: 'Hoe het werkt', href: '/#hoe-werkt-het' },
 ]
 
