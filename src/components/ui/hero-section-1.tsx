@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -242,41 +243,54 @@ const HeroHeader = () => {
               </ul>
             </div>
 
-            {/* Mobile: overlay met volle achtergrondkleur; desktop: inline nav */}
-            {menuState && (
-              <div
-                aria-hidden
-                className="fixed inset-0 z-20 lg:hidden"
-                style={{ backgroundColor: 'hsl(222, 47%, 6%)' }}
-              />
-            )}
-            <div
-              className={cn(
-                'hidden flex-col gap-6 lg:flex lg:flex-row lg:items-center lg:w-fit',
-                'group-data-[state=active]:flex',
-                'fixed inset-0 z-30 border-t border-border/50 px-4 pb-8 shadow-lg',
-                'pt-[calc(env(safe-area-inset-top,0px)+4rem)]',
-                'lg:static lg:inset-auto lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pb-0 lg:shadow-none',
+            {/* Mobiel submenu: alleen zo hoog als inhoud (menu-items + aanmeldknop), niet hele scherm */}
+            {menuState &&
+              typeof document !== 'undefined' &&
+              createPortal(
+                <div className="fixed inset-0 z-40 lg:hidden" aria-modal aria-label="Menu">
+                  <div
+                    className="fixed inset-0 bg-black/40"
+                    aria-hidden
+                    onClick={() => setMenuState(false)}
+                  />
+                  <div
+                    className="fixed left-0 right-0 z-10 flex flex-col gap-4 border-t border-white/10 px-4 py-4 bg-[hsl(222,47%,6%)]"
+                    style={{ top: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}
+                  >
+                    <ul className="space-y-0.5 text-base">
+                      {menuItems.map((item, index) => (
+                        <li key={index}>
+                          <a
+                            href={item.href}
+                            className="block rounded-lg py-3 px-3 text-muted-foreground duration-150 hover:bg-foreground/5 hover:text-foreground"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              const targetId = item.href.replace('/#', '')
+                              const element = document.getElementById(targetId)
+                              if (element) element.scrollIntoView({ behavior: 'smooth' })
+                              setMenuState(false)
+                            }}
+                          >
+                            {item.name}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button asChild variant="default" size="sm" className="mt-2 w-full sm:w-auto" style={{ color: 'white' }}>
+                      <Link to="/signup" onClick={() => setMenuState(false)}>
+                        <span className="font-bold">Ja</span>, ik wil mij aanmelden
+                      </Link>
+                    </Button>
+                  </div>
+                </div>,
+                document.body
               )}
-            >
-              <div className="relative z-10 flex flex-col gap-6 lg:z-auto lg:flex-row lg:items-center">
+            <div className="hidden flex-col gap-6 lg:flex lg:flex-row lg:items-center lg:w-fit">
               <div className="lg:hidden">
                 <ul className="space-y-1 text-base">
                   {menuItems.map((item, index) => (
                     <li key={index}>
-                      <a
-                        href={item.href}
-                        className="block rounded-lg py-3 px-3 text-muted-foreground duration-150 hover:bg-foreground/5 hover:text-foreground"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          const targetId = item.href.replace('/#', '')
-                          const element = document.getElementById(targetId)
-                          if (element) {
-                            element.scrollIntoView({ behavior: 'smooth' })
-                          }
-                          setMenuState(false)
-                        }}
-                      >
+                      <a href={item.href} className="block rounded-lg py-3 px-3 text-muted-foreground duration-150 hover:bg-foreground/5 hover:text-foreground">
                         {item.name}
                       </a>
                     </li>
@@ -284,16 +298,9 @@ const HeroHeader = () => {
                 </ul>
               </div>
               <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 lg:w-auto">
-                <Button
-                  asChild
-                  variant="default"
-                  size="sm"
-                  className="w-full sm:w-auto"
-                  style={{ color: 'white' }}
-                >
-                  <Link to="/signup" onClick={() => setMenuState(false)}><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
+                <Button asChild variant="default" size="sm" className="w-full sm:w-auto" style={{ color: 'white' }}>
+                  <Link to="/signup"><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
                 </Button>
-              </div>
               </div>
             </div>
           </div>
