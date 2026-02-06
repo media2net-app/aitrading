@@ -73,7 +73,7 @@ export default function SignUpPage() {
 
     try {
       console.log('Submitting form with data:', { name, email, motivation, answers })
-      const response = await fetch('http://localhost:3001/api/signup', {
+      const response = await fetch('/api/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
