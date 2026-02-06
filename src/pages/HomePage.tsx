@@ -121,11 +121,13 @@ export default function HomePage() {
                 key={title}
                 className="rounded-xl border border-dark-600 bg-dark-800/50 p-6 transition hover:border-dark-500"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/20 text-xl text-accent">
-                  {icon}
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent/20 text-xl text-accent">
+                    {icon}
+                  </div>
+                  <h3 className="text-lg font-semibold text-white">{title}</h3>
                 </div>
-                <h3 className="mt-4 text-lg font-semibold text-white">{title}</h3>
-                <p className="mt-2 text-gray-400">{description}</p>
+                <p className="mt-3 text-gray-400">{description}</p>
               </div>
             ))}
           </div>
@@ -146,14 +148,15 @@ export default function HomePage() {
           <div className="mx-auto mt-16 grid max-w-4xl grid-cols-1 gap-10 md:grid-cols-3">
             {steps.map(({ step, title, text }) => (
               <div key={step} className="relative text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-dark-800 text-lg font-bold text-accent">
+                {/* Lijn loopt achter de cirkel door: lagere z-index */}
+                {step < 3 && (
+                  <div className="absolute left-1/2 top-7 z-0 hidden h-0.5 w-full bg-dark-500 md:block" aria-hidden />
+                )}
+                <div className="relative z-10 mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-dark-800 text-lg font-bold text-accent">
                   {step}
                 </div>
                 <h3 className="mt-4 text-lg font-semibold text-white">{title}</h3>
                 <p className="mt-2 text-sm text-gray-400">{text}</p>
-                {step < 3 && (
-                  <div className="absolute left-1/2 top-7 hidden h-0.5 w-full bg-dark-500 md:block" aria-hidden />
-                )}
               </div>
             ))}
           </div>
