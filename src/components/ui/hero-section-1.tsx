@@ -242,17 +242,24 @@ const HeroHeader = () => {
               </ul>
             </div>
 
-            {/* Mobile: overlay onder header (ondoorzichtige achtergrond); desktop: inline nav */}
+            {/* Mobile: overlay met volle achtergrondkleur; desktop: inline nav */}
+            {menuState && (
+              <div
+                aria-hidden
+                className="fixed inset-0 z-20 lg:hidden"
+                style={{ backgroundColor: 'hsl(222, 47%, 6%)' }}
+              />
+            )}
             <div
               className={cn(
                 'hidden flex-col gap-6 lg:flex lg:flex-row lg:items-center lg:w-fit',
                 'group-data-[state=active]:flex',
-                'fixed inset-0 z-20 border-t border-border/50 px-4 pb-8 shadow-lg',
-                'bg-[hsl(var(--background))]',
+                'fixed inset-0 z-30 border-t border-border/50 px-4 pb-8 shadow-lg',
                 'pt-[calc(env(safe-area-inset-top,0px)+4rem)]',
                 'lg:static lg:inset-auto lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pb-0 lg:shadow-none',
               )}
             >
+              <div className="relative z-10 flex flex-col gap-6 lg:z-auto lg:flex-row lg:items-center">
               <div className="lg:hidden">
                 <ul className="space-y-1 text-base">
                   {menuItems.map((item, index) => (
@@ -286,6 +293,7 @@ const HeroHeader = () => {
                 >
                   <Link to="/signup" onClick={() => setMenuState(false)}><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
                 </Button>
+              </div>
               </div>
             </div>
           </div>
