@@ -56,9 +56,11 @@ export default function AgreementPage() {
     }
 
     setLoading(true)
+    setError('')
     try {
       const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
-      const res = await fetch(`${apiBase}/api/agreement-sign`, {
+      const url = apiBase ? `${apiBase}/api/agreement-sign` : `${window.location.origin}/api/agreement-sign`
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -72,10 +74,16 @@ export default function AgreementPage() {
       if (res.ok && data.success) {
         setSubmitted(true)
       } else {
-        setError(data.message || 'Ondertekenen mislukt. Probeer het opnieuw.')
+        const msg = data.message || (res.status === 404
+          ? 'Onderteken-service niet bereikbaar. Gebruik www.aitrading.software of probeer later opnieuw.'
+          : 'Ondertekenen mislukt. Probeer het opnieuw.')
+        setError(msg)
       }
-    } catch {
-      setError('Er is een fout opgetreden. Controleer je verbinding en probeer het opnieuw.')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Er is een fout opgetreden.'
+      setError(msg.includes('fetch') || msg.includes('Network')
+        ? 'Verbinding mislukt. Controleer je internet en of je op www.aitrading.software bent.'
+        : 'Er is een fout opgetreden. Controleer je verbinding en probeer het opnieuw.')
     } finally {
       setLoading(false)
     }
