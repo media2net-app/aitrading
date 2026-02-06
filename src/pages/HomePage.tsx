@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { HeroSection } from '@/components/ui/hero-section-1'
 
 const features = [
   {
@@ -38,57 +39,7 @@ const stats = [
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-dark-900">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-dark-600 bg-dark-800/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="text-xl font-semibold text-white">
-            AI Trading
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link to="/login" className="text-gray-300 transition hover:text-white">
-              Login
-            </Link>
-            <Link
-              to="/login"
-              className="rounded-lg bg-accent px-4 py-2.5 font-medium text-dark-900 transition hover:bg-accent-hover"
-            >
-              Start met AI Trading
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <section className="relative overflow-hidden border-b border-dark-600">
-        <div className="absolute inset-0 bg-gradient-to-b from-dark-800/50 to-dark-900" />
-        <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              De AI Trading Bot
-              <br />
-              <span className="text-accent">voor elke trader</span>
-            </h1>
-            <p className="mt-6 text-lg text-gray-400">
-              Handel automatisch met AI: signalen, backtesting en execution in één platform.
-              Sluit je aan bij traders die hun strategie laten draaien op onze software.
-            </p>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <Link
-                to="/login"
-                className="rounded-lg bg-accent px-6 py-3.5 text-base font-semibold text-dark-900 shadow-lg transition hover:bg-accent-hover"
-              >
-                Start met AI Trading
-              </Link>
-              <a
-                href="#hoe-werkt-het"
-                className="rounded-lg border border-dark-500 bg-dark-800 px-6 py-3.5 text-base font-medium text-white transition hover:border-dark-400 hover:bg-dark-700"
-              >
-                Hoe het werkt
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* KPI strip */}
       <section className="border-b border-dark-600 bg-dark-800/50 py-12">
@@ -105,7 +56,7 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section className="border-b border-dark-600 py-20">
+      <section id="features" className="border-b border-dark-600 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold text-white sm:text-4xl">
