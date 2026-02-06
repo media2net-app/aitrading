@@ -25,9 +25,9 @@ Optioneel (als je andere waarden wilt dan de huidige Hostinger SMTP):
 - `SMTP_USER` (default: aitrading@media2net.nl)
 - `SMTP_SECURE` (default: true)
 - `ADMIN_EMAIL` – e-mailadres waar aanmeldingen naartoe gaan (default: aitrading@media2net.nl)
-- `AGREEMENT_TOKEN` – **Samenwerkingsovereenkomst:** geheim token voor de onderteken-link. De pagina is verborgen; alleen met de juiste link kunnen mensen tekenen. Link die je deelt: `https://www.aitrading.software/agreement/JOUW_TOKEN`. Genereer een lang willekeurig token (min. 20 tekens) en zet diezelfde waarde hier. Zonder dit token werkt de onderteken-link niet.
-
 Na het zetten van de env vars opnieuw deployen zodat de API ze gebruikt.
+
+**Overeenkomst:** De ondertekenpagina staat op `https://www.aitrading.software/agreement`. Geen token meer nodig.
 
 ---
 

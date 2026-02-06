@@ -1,5 +1,4 @@
 import { useState, FormEvent } from 'react'
-import { useParams } from 'react-router-dom'
 
 const AGREEMENT_TITLE = 'Samenwerkingsovereenkomst'
 
@@ -33,15 +32,12 @@ Door ondertekening verklaart de deelnemer deze overeenkomst te hebben gelezen en
 `.trim()
 
 export default function AgreementPage() {
-  const { token } = useParams<{ token: string }>()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
-
-  const isValidPage = token && token.length > 0
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -66,7 +62,6 @@ export default function AgreementPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          token,
           name: name.trim(),
           email: email.trim(),
           agreed: true,
@@ -84,19 +79,6 @@ export default function AgreementPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  if (!isValidPage) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-dark-900 px-4">
-        <div className="max-w-md rounded-xl border border-dark-600 bg-dark-800 p-8 text-center">
-          <h1 className="text-xl font-bold text-white">Link ongeldig</h1>
-          <p className="mt-2 text-gray-400">
-            Deze link is niet geldig of is verlopen. Heb je de link per e-mail ontvangen? Gebruik dan de volledige link.
-          </p>
-        </div>
-      </div>
-    )
   }
 
   if (submitted) {
@@ -199,7 +181,7 @@ export default function AgreementPage() {
         </form>
 
         <p className="mt-6 text-center text-xs text-gray-500">
-          Deze pagina is niet openbaar. Alleen personen met de juiste link kunnen de overeenkomst ondertekenen.
+          Alleen voor toegelaten deelnemers. Onderteken alleen als je hiervoor bent uitgenodigd.
         </p>
       </div>
     </div>

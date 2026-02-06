@@ -28,12 +28,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {})
-    const { token, name, email, agreed, signedAt } = body
-
-    const expectedToken = process.env.AGREEMENT_TOKEN
-    if (!expectedToken || token !== expectedToken) {
-      return res.status(403).json({ success: false, message: 'Link ongeldig of verlopen.' })
-    }
+    const { name, email, agreed, signedAt } = body
 
     if (!name || !email || agreed !== true) {
       return res.status(400).json({ success: false, message: 'Naam, e-mail en akkoord zijn verplicht.' })
@@ -49,7 +44,7 @@ module.exports = async function handler(req, res) {
       <p><strong>Naam:</strong> ${name}</p>
       <p><strong>E-mail:</strong> ${email}</p>
       <p><strong>Datum en tijd ondertekening:</strong> ${signedDate}</p>
-      <p><strong>IP / context:</strong> aanvraag ontvangen via de beveiligde link.</p>
+      <p><strong>IP / context:</strong> aanvraag ontvangen via de ondertekenpagina.</p>
       <p>De ondertekenaar heeft de overeenkomst geaccepteerd via de digitale ondertekeningspagina.</p>
     `
 

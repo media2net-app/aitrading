@@ -33,7 +33,7 @@ export default function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/agreement/:token" element={<AgreementPage />} />
+      <Route path="/agreement" element={<AgreementPage />} />
       <Route path="/calculator" element={<CalculatorPage />} />
       <Route
         path="/dashboard"
