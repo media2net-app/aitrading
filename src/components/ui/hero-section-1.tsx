@@ -171,36 +171,55 @@ const HeroHeader = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  React.useEffect(() => {
+    if (menuState && typeof window !== 'undefined' && window.innerWidth < 1024) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = ''
+      }
+    }
+  }, [menuState])
+
   return (
-    <header>
+    <header className="fixed top-0 left-0 right-0 z-50 w-full">
       <nav
         data-state={menuState ? 'active' : undefined}
-        className="group fixed z-20 w-full px-2 outline-none"
+        className={cn(
+          'group w-full outline-none transition-all duration-300',
+          'lg:px-2',
+          'bg-background/95 backdrop-blur-md border-b border-border/50',
+          'lg:bg-transparent lg:border-b-0 lg:backdrop-blur-none',
+          isScrolled && 'lg:px-2',
+        )}
+        style={{ paddingTop: 'env(safe-area-inset-top, 0)' }}
       >
         <div
           className={cn(
-            'mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12',
+            'mx-auto max-w-6xl px-4 transition-all duration-300 sm:px-6 lg:px-12',
+            'lg:mt-2',
             isScrolled &&
-              'max-w-4xl rounded-2xl border border-border border-border/80 bg-background/50 shadow-[0_0_0_1px_hsl(var(--background))] backdrop-blur-lg lg:px-5',
+              'lg:max-w-4xl lg:rounded-2xl lg:border lg:border-border lg:border-border/80 lg:bg-background/50 lg:shadow-[0_0_0_1px_hsl(var(--background))] lg:backdrop-blur-lg lg:px-5',
           )}
         >
-          <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
-            <div className="flex w-full justify-between lg:w-auto">
+          <div className="relative flex flex-wrap items-center justify-between gap-4 py-3 lg:gap-0 lg:py-4">
+            <div className="relative z-30 flex min-h-[44px] w-full items-center justify-between lg:w-auto lg:min-h-0 lg:z-auto">
               <Link to="/" aria-label="home" className="flex items-center space-x-2">
                 <Logo />
               </Link>
 
               <button
+                type="button"
                 onClick={() => setMenuState(!menuState)}
-                aria-label={menuState ? 'Close Menu' : 'Open Menu'}
-                className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden"
+                aria-label={menuState ? 'Menu sluiten' : 'Menu openen'}
+                aria-expanded={menuState}
+                className="relative z-30 flex size-11 shrink-0 items-center justify-center rounded-lg lg:hidden hover:bg-foreground/5 active:bg-foreground/10"
               >
-                <Menu className="m-auto size-6 duration-200 group-data-[state=active]:rotate-180 group-data-[state=active]:scale-0 group-data-[state=active]:opacity-0" />
+                <Menu className="size-6 duration-200 group-data-[state=active]:rotate-180 group-data-[state=active]:scale-0 group-data-[state=active]:opacity-0" />
                 <X className="absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200 group-data-[state=active]:rotate-0 group-data-[state=active]:scale-100 group-data-[state=active]:opacity-100" />
               </button>
             </div>
 
-            <div className="absolute inset-0 m-auto hidden size-fit lg:block">
+            <div className="absolute inset-0 m-auto hidden size-fit lg:block" aria-hidden={menuState}>
               <ul className="flex gap-8 text-sm">
                 {menuItems.map((item, index) => (
                   <li key={index}>
@@ -223,14 +242,23 @@ const HeroHeader = () => {
               </ul>
             </div>
 
-            <div className="mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border border-border bg-background p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none group-data-[state=active]:block dark:shadow-none dark:lg:bg-transparent">
+            {/* Mobile: overlay onder header; desktop: inline nav */}
+            <div
+              className={cn(
+                'hidden flex-col gap-6 lg:flex lg:flex-row lg:items-center lg:w-fit',
+                'group-data-[state=active]:flex',
+                'fixed inset-0 z-20 border-t border-border/50 bg-background px-4 pb-8 shadow-lg',
+                'pt-[calc(env(safe-area-inset-top,0px)+4rem)]',
+                'lg:static lg:inset-auto lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0 lg:pb-0 lg:shadow-none',
+              )}
+            >
               <div className="lg:hidden">
-                <ul className="space-y-6 text-base">
+                <ul className="space-y-1 text-base">
                   {menuItems.map((item, index) => (
                     <li key={index}>
                       <a
                         href={item.href}
-                        className="block text-muted-foreground duration-150 hover:text-foreground"
+                        className="block rounded-lg py-3 px-3 text-muted-foreground duration-150 hover:bg-foreground/5 hover:text-foreground"
                         onClick={(e) => {
                           e.preventDefault()
                           const targetId = item.href.replace('/#', '')
@@ -241,13 +269,13 @@ const HeroHeader = () => {
                           setMenuState(false)
                         }}
                       >
-                        <span>{item.name}</span>
+                        {item.name}
                       </a>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
+              <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 lg:w-auto">
                 <Button
                   asChild
                   variant="default"
