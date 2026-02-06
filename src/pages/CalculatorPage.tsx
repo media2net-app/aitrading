@@ -34,17 +34,41 @@ const fieldInfos: Record<string, { title: string; text: string }> = {
 type SimPhase = 'idle' | 'win' | 'loss'
 const SIM_STEP_MS = 700
 
+const defaults = { capital: 500, slPercent: 2, winRatePercent: 90, rewardRatio: 1, targetDaily: 100, lotSize: 0.1 }
+const minima = { capital: 100, slPercent: 0.5, winRatePercent: 50, rewardRatio: 0.5, targetDaily: 10, lotSize: 0.01 }
+const maxima = { slPercent: 10, winRatePercent: 100, rewardRatio: 3, lotSize: 10 }
+
+function parseNum(s: string, def: number): number {
+  if (s.trim() === '') return def
+  const n = parseFloat(s.replace(',', '.'))
+  return Number.isFinite(n) ? n : def
+}
+
 export function CalculatorContent({ showTradingUitleg = true }: { showTradingUitleg?: boolean }) {
-  const [capital, setCapital] = useState(500)
-  const [slPercent, setSlPercent] = useState(2)
-  const [winRatePercent, setWinRatePercent] = useState(90)
-  const [rewardRatio, setRewardRatio] = useState(1)
-  const [targetDaily, setTargetDaily] = useState(100)
-  const [lotSize, setLotSize] = useState(0.1)
+  const [capitalStr, setCapitalStr] = useState(String(defaults.capital))
+  const [slPercentStr, setSlPercentStr] = useState(String(defaults.slPercent))
+  const [winRatePercentStr, setWinRatePercentStr] = useState(String(defaults.winRatePercent))
+  const [rewardRatioStr, setRewardRatioStr] = useState(String(defaults.rewardRatio))
+  const [targetDailyStr, setTargetDailyStr] = useState(String(defaults.targetDaily))
+  const [lotSizeStr, setLotSizeStr] = useState(String(defaults.lotSize))
 
   const [simPhase, setSimPhase] = useState<SimPhase>('idle')
   const [simStep, setSimStep] = useState(0)
   const [simRunning, setSimRunning] = useState(false)
+
+  const capital = parseNum(capitalStr, defaults.capital)
+  const slPercent = parseNum(slPercentStr, defaults.slPercent)
+  const winRatePercent = parseNum(winRatePercentStr, defaults.winRatePercent)
+  const rewardRatio = parseNum(rewardRatioStr, defaults.rewardRatio)
+  const targetDaily = parseNum(targetDailyStr, defaults.targetDaily)
+  const lotSize = parseNum(lotSizeStr, defaults.lotSize)
+
+  const warnCapital = capitalStr.trim() === '' || !Number.isFinite(parseFloat(capitalStr.replace(',', '.'))) || capital < minima.capital
+  const warnSlPercent = slPercentStr.trim() === '' || !Number.isFinite(parseFloat(slPercentStr.replace(',', '.'))) || slPercent < minima.slPercent || slPercent > maxima.slPercent
+  const warnWinRatePercent = winRatePercentStr.trim() === '' || !Number.isFinite(parseFloat(winRatePercentStr.replace(',', '.'))) || winRatePercent < minima.winRatePercent || winRatePercent > maxima.winRatePercent
+  const warnRewardRatio = rewardRatioStr.trim() === '' || !Number.isFinite(parseFloat(rewardRatioStr.replace(',', '.'))) || rewardRatio < minima.rewardRatio || rewardRatio > maxima.rewardRatio
+  const warnTargetDaily = targetDailyStr.trim() === '' || !Number.isFinite(parseFloat(targetDailyStr.replace(',', '.'))) || targetDaily < minima.targetDaily
+  const warnLotSize = lotSizeStr.trim() === '' || !Number.isFinite(parseFloat(lotSizeStr.replace(',', '.'))) || lotSize < minima.lotSize || lotSize > maxima.lotSize
 
   const result = useMemo(() => {
     const riskPerTrade = capital * (slPercent / 100)
@@ -190,12 +214,17 @@ export function CalculatorContent({ showTradingUitleg = true }: { showTradingUit
             <div className={infoBoxClass}>{fieldInfos.capital.text}</div>
             <input
               type="number"
-              min={100}
+              min={minima.capital}
               step={50}
-              value={capital}
-              onChange={(e) => setCapital(Number(e.target.value) || 500)}
+              value={capitalStr}
+              onChange={(e) => setCapitalStr(e.target.value)}
               className="mt-2 block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             />
+            {warnCapital && (
+              <p className="mt-1.5 text-xs text-amber-400">
+                {capitalStr.trim() === '' ? `Vul een getal in (min. €${minima.capital}). Bij leeg veld wordt €${defaults.capital} gebruikt in de berekening.` : `Minimaal €${minima.capital}.`}
+              </p>
+            )}
           </div>
 
           <div>
@@ -208,13 +237,16 @@ export function CalculatorContent({ showTradingUitleg = true }: { showTradingUit
             <div className={infoBoxClass}>{fieldInfos.sl.text}</div>
             <input
               type="number"
-              min={0.5}
-              max={10}
+              min={minima.slPercent}
+              max={maxima.slPercent}
               step={0.5}
-              value={slPercent}
-              onChange={(e) => setSlPercent(Number(e.target.value) || 2)}
+              value={slPercentStr}
+              onChange={(e) => setSlPercentStr(e.target.value)}
               className="mt-2 block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             />
+            {warnSlPercent && (
+              <p className="mt-1.5 text-xs text-amber-400">Vul een getal in tussen {minima.slPercent} en {maxima.slPercent}%.</p>
+            )}
           </div>
 
           <div>
@@ -227,13 +259,16 @@ export function CalculatorContent({ showTradingUitleg = true }: { showTradingUit
             <div className={infoBoxClass}>{fieldInfos.winRate.text}</div>
             <input
               type="number"
-              min={50}
-              max={100}
+              min={minima.winRatePercent}
+              max={maxima.winRatePercent}
               step={5}
-              value={winRatePercent}
-              onChange={(e) => setWinRatePercent(Number(e.target.value) || 90)}
+              value={winRatePercentStr}
+              onChange={(e) => setWinRatePercentStr(e.target.value)}
               className="mt-2 block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             />
+            {warnWinRatePercent && (
+              <p className="mt-1.5 text-xs text-amber-400">Vul een getal in tussen {minima.winRatePercent} en {maxima.winRatePercent}%.</p>
+            )}
           </div>
 
           <div>
@@ -248,17 +283,20 @@ export function CalculatorContent({ showTradingUitleg = true }: { showTradingUit
               <span className="text-sm text-gray-500">1 :</span>
               <input
                 type="number"
-                min={0.5}
-                max={3}
+                min={minima.rewardRatio}
+                max={maxima.rewardRatio}
                 step={0.1}
-                value={rewardRatio}
-                onChange={(e) => setRewardRatio(Number(e.target.value) || 1)}
+                value={rewardRatioStr}
+                onChange={(e) => setRewardRatioStr(e.target.value)}
                 className="block w-24 rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
               <span className="text-sm text-gray-500">
                 (bijv. 1 = 1:1, 1,5 = 1:1,5)
               </span>
             </div>
+            {warnRewardRatio && (
+              <p className="mt-1.5 text-xs text-amber-400">Vul een getal in tussen {minima.rewardRatio} en {maxima.rewardRatio}.</p>
+            )}
           </div>
 
           <div>
@@ -271,12 +309,15 @@ export function CalculatorContent({ showTradingUitleg = true }: { showTradingUit
             <div className={infoBoxClass}>{fieldInfos.target.text}</div>
             <input
               type="number"
-              min={10}
+              min={minima.targetDaily}
               step={10}
-              value={targetDaily}
-              onChange={(e) => setTargetDaily(Number(e.target.value) || 100)}
+              value={targetDailyStr}
+              onChange={(e) => setTargetDailyStr(e.target.value)}
               className="mt-2 block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             />
+            {warnTargetDaily && (
+              <p className="mt-1.5 text-xs text-amber-400">Vul een getal in (min. €{minima.targetDaily}).</p>
+            )}
           </div>
 
           <div>
@@ -290,26 +331,29 @@ export function CalculatorContent({ showTradingUitleg = true }: { showTradingUit
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <input
                 type="number"
-                min={0.01}
-                max={10}
+                min={minima.lotSize}
+                max={maxima.lotSize}
                 step={0.01}
-                value={lotSize}
-                onChange={(e) => setLotSize(Number(e.target.value) || 0.1)}
+                value={lotSizeStr}
+                onChange={(e) => setLotSizeStr(e.target.value)}
                 className="block w-24 rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
               <span className="text-sm text-gray-500">lot (1 lot = 100 oz goud)</span>
               <button
                 type="button"
-                onClick={() => setLotSize(Math.max(0.01, Math.min(10, recommendedLotSize)))}
+                onClick={() => setLotSizeStr(String(Math.max(minima.lotSize, Math.min(maxima.lotSize, recommendedLotSize))))}
                 className="rounded-lg border border-accent/50 bg-accent/10 px-2 py-1.5 text-xs font-medium text-accent hover:bg-accent/20"
               >
                 Gebruik lot size voor {slPercent}% risico ({result.riskPerTrade.toFixed(0)} €)
               </button>
             </div>
+            {warnLotSize && (
+              <p className="mt-1.5 text-xs text-amber-400">Vul een getal in tussen {minima.lotSize} en {maxima.lotSize} lot.</p>
+            )}
             <p className="mt-1.5 text-xs text-gray-500">
               Bij deze voorbeeld-SL past voor jouw risico: <strong className="text-gray-400">{recommendedLotSize} lot</strong> → verlies bij SL = €{result.riskPerTrade.toFixed(2)}. Minimale lot size bij veel brokers: <strong className="text-gray-400">0,01 lot</strong>.
             </p>
-            {recommendedLotSize > 0 && recommendedLotSize < 0.01 && (
+            {recommendedLotSize > 0 && recommendedLotSize < minima.lotSize && (
               <p className="mt-1 text-xs text-amber-400">
                 Je aanbevolen lot size ({recommendedLotSize} lot) ligt onder het minimum van veel brokers. Je moet dan min. 0,01 lot handelen — je werkelijk risico per trade wordt daarmee hoger dan {slPercent}%.
               </p>
