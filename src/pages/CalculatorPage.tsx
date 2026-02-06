@@ -35,7 +35,7 @@ type SimPhase = 'idle' | 'win' | 'loss'
 const SIM_STEP_MS = 700
 
 const defaults = { capital: 500, slPercent: 2, winRatePercent: 90, rewardRatio: 1, targetDaily: 100, lotSize: 0.1 }
-const minima = { capital: 100, slPercent: 0.5, winRatePercent: 50, rewardRatio: 0.5, targetDaily: 10, lotSize: 0.01 }
+const minima = { capital: 500, slPercent: 0.5, winRatePercent: 50, rewardRatio: 0.5, targetDaily: 10, lotSize: 0.01 }
 const maxima = { slPercent: 10, winRatePercent: 100, rewardRatio: 3, lotSize: 10 }
 
 function parseNum(s: string, def: number): number {
