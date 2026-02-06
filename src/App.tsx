@@ -13,6 +13,7 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/SignUpPage'
 import AgreementPage from './pages/AgreementPage'
+import CalculatorPage from './pages/CalculatorPage'
 import DashboardLayout from './layouts/DashboardLayout'
 import DashboardPage from './pages/DashboardPage'
 
@@ -33,6 +34,7 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/agreement/:token" element={<AgreementPage />} />
+      <Route path="/calculator" element={<CalculatorPage />} />
       <Route
         path="/dashboard"
         element={
