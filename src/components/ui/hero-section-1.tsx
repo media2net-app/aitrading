@@ -276,11 +276,18 @@ const HeroHeader = () => {
                         </li>
                       ))}
                     </ul>
-                    <Button asChild variant="default" size="sm" className="mt-2 w-full sm:w-auto" style={{ color: 'white' }}>
-                      <Link to="/signup" onClick={() => setMenuState(false)}>
-                        <span className="font-bold">Ja</span>, ik wil mij aanmelden
-                      </Link>
-                    </Button>
+                    <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:gap-3">
+                      <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                        <Link to="/login" onClick={() => setMenuState(false)}>
+                          Inloggen
+                        </Link>
+                      </Button>
+                      <Button asChild variant="default" size="sm" className="w-full sm:w-auto" style={{ color: 'white' }}>
+                        <Link to="/signup" onClick={() => setMenuState(false)}>
+                          <span className="font-bold">Ja</span>, ik wil mij aanmelden
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </div>,
                 document.body
@@ -298,6 +305,9 @@ const HeroHeader = () => {
                 </ul>
               </div>
               <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 lg:w-auto">
+                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                  <Link to="/login">Inloggen</Link>
+                </Button>
                 <Button asChild variant="default" size="sm" className="w-full sm:w-auto" style={{ color: 'white' }}>
                   <Link to="/signup"><span className="font-bold">Ja</span>, ik wil mij aanmelden</Link>
                 </Button>

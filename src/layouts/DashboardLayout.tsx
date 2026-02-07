@@ -6,7 +6,7 @@ export default function DashboardLayout() {
   return (
     <div className="flex min-h-screen bg-dark-900">
       <DashboardSidebar />
-      <div className="flex flex-1 flex-col lg:pl-64">
+      <div className="flex flex-1 flex-col sm:pl-64">
         <DashboardHeader />
         <main className="flex-1 p-6">
           <Outlet />

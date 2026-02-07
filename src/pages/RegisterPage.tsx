@@ -2,43 +2,38 @@ import { useState, FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
   const [error, setError] = useState('')
-  const { login } = useAuth()
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-
-  const validate = (): boolean => {
-    if (!email.trim()) {
-      setError('Vul je e-mailadres in.')
-      return false
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email.trim())) {
-      setError('Vul een geldig e-mailadres in.')
-      return false
-    }
-    if (!password) {
-      setError('Vul je wachtwoord in.')
-      return false
-    }
-    if (password.length < 6) {
-      setError('Wachtwoord moet minimaal 6 tekens zijn.')
-      return false
-    }
-    setError('')
-    return true
-  }
+  const { register: doRegister } = useAuth()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!validate()) return
-    const result = await login(email.trim(), password)
+    setError('')
+    const trimmed = email.trim().toLowerCase()
+    if (!trimmed) {
+      setError('Vul je e-mailadres in.')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setError('Vul een geldig e-mailadres in.')
+      return
+    }
+    if (!password || password.length < 6) {
+      setError('Wachtwoord moet minimaal 6 tekens zijn.')
+      return
+    }
+    setLoading(true)
+    const result = await doRegister(trimmed, password, name.trim() || undefined)
+    setLoading(false)
     if (result.success) {
       navigate('/dashboard', { replace: true })
     } else {
-      setError(result.error || 'Inloggen mislukt. Controleer je gegevens.')
+      setError(result.error || 'Registreren mislukt.')
     }
   }
 
@@ -50,9 +45,9 @@ export default function LoginPage() {
             AI Trading.software
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-white">Mijn account</h1>
+        <h1 className="text-2xl font-bold text-white">Account aanmaken</h1>
         <p className="mt-2 text-gray-400">
-          Log in om toegang te krijgen tot je dashboard.
+          Maak een account om in te loggen en analyses op te slaan.
         </p>
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           {error && (
@@ -63,6 +58,20 @@ export default function LoginPage() {
               {error}
             </div>
           )}
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-300">
+              Naam (optioneel)
+            </label>
+            <input
+              id="name"
+              type="text"
+              autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="mt-2 block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white placeholder-gray-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+              placeholder="Jan Jansen"
+            />
+          </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-300">
               E-mailadres
@@ -75,37 +84,37 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="mt-2 block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white placeholder-gray-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               placeholder="naam@voorbeeld.nl"
+              required
             />
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-              Wachtwoord
+              Wachtwoord (min. 6 tekens)
             </label>
             <input
               id="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-2 block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white placeholder-gray-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               placeholder="••••••••"
+              required
+              minLength={6}
             />
           </div>
           <button
             type="submit"
-            className="w-full rounded-lg bg-accent py-3.5 font-semibold text-white transition hover:bg-accent-hover"
+            disabled={loading}
+            className="w-full rounded-lg bg-accent py-3.5 font-semibold text-white transition hover:bg-accent-hover disabled:opacity-50"
           >
-            Mijn account
+            {loading ? 'Bezig...' : 'Account aanmaken'}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-500">
-          Nog geen account?{' '}
-          <Link to="/register" className="text-accent hover:underline">
-            Registreren
-          </Link>
-          {' · '}
-          <Link to="/signup" className="text-accent hover:underline">
-            Aanmelden voor AI Trading
+          Heb je al een account?{' '}
+          <Link to="/login" className="text-accent hover:underline">
+            Inloggen
           </Link>
         </p>
         <p className="mt-4 text-center">

@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  name         String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  analyses     Analysis[]
+}
+
+model Analysis {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date       String   // YYYY-MM-DD
+  symbol     String   @default("XAUUSD")
+  market     Json?    // { open, high, low, close, volume, trend }
+  patterns   Json     @default("[]") // [{ name, type, direction, confidence? }]
+  dataSource String   @default("demo") @map("data_source")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, date, symbol])
+  @@map("analyses")
+}
