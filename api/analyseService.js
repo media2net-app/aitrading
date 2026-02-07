@@ -1,13 +1,34 @@
 /**
  * Daily analyse: market summary + simple pattern detection from bars.
+ * Day detail: intraday bars + pattern-based suggested entries for the trade bot.
  */
-const { getBarsInRange } = require('./marketData')
+const { getBarsInRange, getIntradayBarsForDate, isFutureDate, isWeekend } = require('./marketData')
 
 const CONTEXT_DAYS = 5
 
 function getDailyAnalysis(symbol, dateStr) {
-  const from = new Date(dateStr)
-  from.setDate(from.getDate() - CONTEXT_DAYS)
+  if (isFutureDate(dateStr)) {
+    return {
+      date: dateStr,
+      symbol,
+      market: null,
+      patterns: [],
+      dataSource: 'demo',
+      error: 'Datum in de toekomst – geen data beschikbaar. Kies vandaag of een eerdere datum.',
+    }
+  }
+  if (isWeekend(dateStr)) {
+    return {
+      date: dateStr,
+      symbol,
+      market: null,
+      patterns: [],
+      dataSource: 'demo',
+      error: 'Markt gesloten (weekend). XAUUSD/Forex handel 24/5, ma–vr.',
+    }
+  }
+  const from = new Date(dateStr + 'T00:00:00Z')
+  from.setUTCDate(from.getUTCDate() - CONTEXT_DAYS)
   const fromStr = from.toISOString().slice(0, 10)
   const bars = getBarsInRange(symbol, fromStr, dateStr)
   const dayBar = bars.filter((b) => b.date === dateStr)[0]
@@ -136,6 +157,119 @@ function detectPatterns(bars, targetDate) {
   return patterns
 }
 
+// --- Dagdetail: intraday bars + voorgestelde instapmomenten voor de bot ---
+
+function getDayDetail(symbol, dateStr) {
+  const daily = getDailyAnalysis(symbol, dateStr)
+  const intraday = getIntradayBarsForDate(symbol, dateStr, '1H')
+  const suggestedEntries = detectIntradayEntries(intraday)
+  return {
+    date: dateStr,
+    symbol,
+    daily: daily.market ? { ...daily.market, patterns: daily.patterns } : null,
+    intraday,
+    suggestedEntries,
+    dataSource: daily.dataSource,
+  }
+}
+
+/**
+ * Scan intraday bars op candlestick- en contextpatronen; retourneer mogelijke instapmomenten.
+ */
+function detectIntradayEntries(bars) {
+  const entries = []
+  if (!bars || bars.length < 3) return entries
+
+  for (let i = 2; i < bars.length; i++) {
+    const curr = bars[i]
+    const prev = bars[i - 1]
+    const prev2 = bars[i - 2]
+    const body = Math.abs(curr.close - curr.open)
+    const range = curr.high - curr.low
+    const upperWick = curr.high - Math.max(curr.open, curr.close)
+    const lowerWick = Math.min(curr.open, curr.close) - curr.low
+    const isBull = curr.close > curr.open
+
+    // Hammer (bullish): kleine body, lange onderste lont, close in bovenhelft
+    if (range > 0 && body / range < 0.35 && lowerWick > body * 1.5 && upperWick < body) {
+      entries.push({
+        time: curr.time,
+        hour: curr.hour,
+        price: curr.close,
+        pattern: 'Hammer',
+        direction: 'BUY',
+        confidence: 0.65,
+        reason: 'Bullish hammer: mogelijke bodem',
+      })
+    }
+    // Shooting star (bearish)
+    if (range > 0 && body / range < 0.35 && upperWick > body * 1.5 && lowerWick < body) {
+      entries.push({
+        time: curr.time,
+        hour: curr.hour,
+        price: curr.close,
+        pattern: 'Shooting star',
+        direction: 'SELL',
+        confidence: 0.65,
+        reason: 'Bearish shooting star: mogelijke top',
+      })
+    }
+    // Bullish engulfing: vorige kaars bearish, huidige grotere groene kaars omvat vorige
+    if (prev.close < prev.open && isBull && curr.open < prev.close && curr.close > prev.open &&
+        (curr.close - curr.open) > (prev.open - prev.close)) {
+      entries.push({
+        time: curr.time,
+        hour: curr.hour,
+        price: curr.close,
+        pattern: 'Bullish Engulfing',
+        direction: 'BUY',
+        confidence: 0.7,
+        reason: 'Engulfing: sterke bullish omkering',
+      })
+    }
+    // Bearish engulfing
+    if (prev.close > prev.open && !isBull && curr.open > prev.close && curr.close < prev.open &&
+        (curr.open - curr.close) > (prev.close - prev.open)) {
+      entries.push({
+        time: curr.time,
+        hour: curr.hour,
+        price: curr.close,
+        pattern: 'Bearish Engulfing',
+        direction: 'SELL',
+        confidence: 0.7,
+        reason: 'Engulfing: sterke bearish omkering',
+      })
+    }
+    // Doji bij support (na 2 dalende kaarsen): mogelijke bounce
+    if (range > 0 && body / range < 0.15 && prev2.close > prev2.open && prev.close < prev.open && prev.open < prev2.close) {
+      entries.push({
+        time: curr.time,
+        hour: curr.hour,
+        price: curr.close,
+        pattern: 'Doji na daling',
+        direction: 'BUY',
+        confidence: 0.55,
+        reason: 'Doji na bearish: mogelijke pauze/bounce',
+      })
+    }
+    // Hogere bodem (2 opeenvolgende hogere lows) + groene sluiting
+    if (i >= 2 && prev.low > prev2.low && curr.low > prev.low && isBull) {
+      entries.push({
+        time: curr.time,
+        hour: curr.hour,
+        price: curr.close,
+        pattern: 'Hogere bodem',
+        direction: 'BUY',
+        confidence: 0.6,
+        reason: 'Hogere bodems: opwaartse structuur',
+      })
+    }
+  }
+
+  return entries.sort((a, b) => a.hour - b.hour)
+}
+
 module.exports = {
   getDailyAnalysis,
+  getDayDetail,
 }

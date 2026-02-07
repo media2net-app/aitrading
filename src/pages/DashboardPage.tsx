@@ -1,6 +1,7 @@
 import DashboardKpiCards from '../components/dashboard/DashboardKpiCards'
 import DashboardChart from '../components/dashboard/DashboardChart'
 import DashboardTradeTable from '../components/dashboard/DashboardTradeTable'
+import DashboardStatusCard from '../components/dashboard/DashboardStatusCard'
 
 export default function DashboardPage() {
   return (
@@ -11,6 +12,8 @@ export default function DashboardPage() {
           Je account en prestaties in één oogopslag.
         </p>
       </div>
+
+      <DashboardStatusCard />
 
       <DashboardKpiCards />
 

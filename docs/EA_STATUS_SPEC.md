@@ -1,0 +1,71 @@
+# EA status.json – specificatie voor de bridge
+
+De webapp leest **status.json** uit de MT5_AI_Bot-map. De EA moet dit bestand regelmatig (bijv. elke seconde) overschrijven met actuele gegevens. Zo kan het dashboard op elke PC automatisch de **eigen** accountgegevens tonen (rekeningnummer, server, broker, modus) zonder .env per machine.
+
+## Doel: meerdere gebruikers, zelfde trades
+
+- **Zelfde trades:** Het signaal (welke trade, wanneer) komt centraal; elke EA voert dezelfde trade uit op de eigen rekening (via `commands.json`).
+- **Instellingen per persoon:** Lot size, risico e.d. kunnen per gebruiker verschillen (bijv. via de app of EA-inputs).
+- **Accountgegevens per PC:** Elke EA schrijft zijn eigen `login`, `server`, `company`, `mode` in status.json → het dashboard toont automatisch de juiste rekening op die PC.
+
+## Per app-gebruiker / per PC
+
+- **App-inlog:** Iemand logt in met zijn eigen e-mail (bijv. chiel@media2net.nl of info@garage-eelman.nl). Dat bepaalt alleen wie er in de webapp is ingelogd.
+- **MT5-rekening op het dashboard:** Die komt **niet** uit de app-account, maar uit de **EA op die PC**. De EA op de PC van chiel schrijft chiel’s MT5-rekening in status.json; de EA op de PC van info@garage-eelman schrijft hun MT5-rekening. Geen aparte configuratie per e-mail nodig.
+- **Praktisch:** Als je morgen bij info@garage-eelman.nl op hun PC installeert: die persoon logt in met info@garage-eelman.nl, de EA op die PC vult status.json met **hun** MT5-account (rekeningnummer, server, broker). Het dashboard toont dan automatisch die rekening. Op jouw PC blijft chiel@media2net.nl met jouw MT5-rekening; op hun PC info@garage-eelman.nl met hun MT5-rekening.
+
+## Verplichte velden in status.json
+
+| Veld        | Type    | Beschrijving |
+|------------|---------|--------------|
+| `connected`| boolean | `true` als MT5 verbonden is en data geldig is |
+| `bid`      | number  | Huidige bid |
+| `ask`      | number  | Huidige ask |
+| `symbol`   | string  | Symbool van de chart (bijv. `"GOLD"`, `"XAUUSD"`) |
+| `timestamp`| number  | Unix-tijd (seconden) van de laatste update |
+
+## Aanbevolen velden (voor dashboard Account & verbindingen)
+
+Deze velden worden op het dashboard getoond. Zonder deze velden kan de beheerder ze tijdelijk in .env zetten (fallback).
+
+| Veld      | Type   | Beschrijving | MQL5 |
+|-----------|--------|--------------|------|
+| `login`   | number | MT5-rekeningnummer | `AccountInfoInteger(ACCOUNT_LOGIN)` |
+| `server`  | string | Servernaam (bijv. Ava-Real 1-MT5) | `AccountInfoString(ACCOUNT_SERVER)` |
+| `company` | string | Brokernaam (bijv. Ava Trade Ltd.) | `AccountInfoString(ACCOUNT_COMPANY)` |
+| `mode`    | string | Accountmodus (bijv. Hedge) | Zie onder |
+
+Optioneel: `openPositions` (array van posities) voor de app.
+
+## Voorbeeld status.json
+
+```json
+{
+  "connected": true,
+  "symbol": "GOLD",
+  "bid": 4965.01,
+  "ask": 4967.43,
+  "spread": 2.42,
+  "timestamp": 1739123456,
+  "login": 89865117,
+  "server": "Ava-Real 1-MT5",
+  "company": "Ava Trade Ltd.",
+  "mode": "Hedge",
+  "openPositions": []
+}
+```
+
+## Kant-en-klaar MQL5-bestand
+
+In de map **ea/** staat een include die je in je EA kunt gebruiken:
+
+- **ea/MT5_StatusWriter.mqh** – functie `WriteMT5Status()` die alle MT5-gegevens (login, server, company, mode, bid, ask, symbol) naar status.json schrijft.
+- **ea/README.md** – uitleg hoe je de .mqh in je EA includeert en aanroept (OnTick of OnTimer).
+
+Kopieer `MT5_StatusWriter.mqh` naar je MQL5 Include-map, voeg `#include <MT5_StatusWriter.mqh>` toe aan je EA en roep in `OnTick()` of `OnTimer()` (elke 1–2 s) `WriteMT5Status()` aan. Dan vult de EA status.json op elke PC met de eigen rekening/server/broker.
+
+**Let op:** De .mqh schrijft naar **Terminal Common\\Files\\MT5_AI_Bot\\status.json** (`FILE_COMMON`). Zet `MT5_BOT_PATH` in de app op hetzelfde map op die PC (zie ea/README.md).
+
+## Prioriteit: EA overschrijft .env
+
+De app leest eerst eventuele waarden uit .env (fallback) en overschrijft die met alles wat de EA in status.json zet. Dus zodra de EA `login`, `server`, `company`, `mode` schrijft, komen die op het dashboard – op elke PC met hun eigen rekening. .env is alleen bedoeld voor ontwikkeling of als de EA deze velden nog niet vult.

@@ -7,8 +7,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node server.cjs",
-    "server:dev": "npm run build && node server.js"
+    "server": "node server.js",
+    "server:dev": "npm run build && node server.js",
+    "start:all": "concurrently -n backend,frontend -c blue,green \"node server.js\" \"vite --port 3000\""
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
@@ -39,6 +40,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^9.2.1",
     "dotenv": "^17.2.4",
     "eslint": "^9.15.0",
     "eslint-plugin-react-hooks": "^5.0.0",

@@ -94,11 +94,11 @@ export function CalculatorContent({ showTradingUitleg = true }: { showTradingUit
   // Voorbeeld trade goud (visueel + simulatie) – winst/verlies uit lot size + calculator
   const XAU_CONTRACT_SIZE = 100 // 1 lot = 100 oz
   const USD_TO_EUR = 1.05
-  const exampleEntry = 2650
-  const exampleSl = 2640
-  const exampleTp1 = 2655
-  const exampleTp2 = 2662
-  const exampleTp3 = 2670
+  const exampleEntry = 4965
+  const exampleSl = 4955
+  const exampleTp1 = 4975
+  const exampleTp2 = 4982
+  const exampleTp3 = 4990
 
   // In de praktijk: risico in € bepaalt je lot size. Lot size = riskEur / (verlies per lot in EUR).
   const verliesPerLotEur = (exampleEntry - exampleSl) * XAU_CONTRACT_SIZE / USD_TO_EUR
@@ -371,7 +371,7 @@ export function CalculatorContent({ showTradingUitleg = true }: { showTradingUit
             <h2 className="text-base font-semibold text-white">Voorbeeld trade</h2>
             <p className="mt-1 text-xs text-gray-500">{exampleTrade.asset} · BUY</p>
             <p className="mt-2 rounded-lg border border-dark-500 bg-dark-700/50 px-3 py-2 text-xs text-gray-400 leading-relaxed">
-              De bedragen (bijv. $2650) zijn de <strong className="text-gray-300">actuele prijs van goud</strong> in dollar per ounce (XAU/USD). Daar trade je op: je opent een BUY of SELL op dat prijsniveau, en zet daar je stop-loss en take-profits.
+              De bedragen (bijv. $4965) zijn de <strong className="text-gray-300">actuele prijs van goud</strong> in dollar per ounce (XAU/USD). Daar trade je op: je opent een BUY of SELL op dat prijsniveau, en zet daar je stop-loss en take-profits.
             </p>
             {verliesOverschrijdtKapitaal ? (
               <div className="mt-2 rounded-lg border border-red-500/50 bg-red-500/10 px-3 py-2 text-xs text-red-200">

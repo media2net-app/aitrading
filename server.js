@@ -4,7 +4,7 @@ const cors = require('cors')
 const path = require('path')
 const mt5 = require('./api/mt5Bridge')
 const { getBarsInRange } = require('./api/marketData')
-const { getDailyAnalysis } = require('./api/analyseService')
+const { getDailyAnalysis, getDayDetail } = require('./api/analyseService')
 const auth = require('./api/auth')
 const { getPrisma, hasDatabase } = require('./api/db')
 
@@ -26,6 +26,8 @@ app.use(express.static(path.join(__dirname, 'dist')))
 
 // MT5 API (file-based bridge)
 app.get('/api/mt5/status', mt5.getStatus)
+app.get('/api/mt5/path', mt5.getPath)
+app.get('/api/mt5/equity-history', mt5.getEquityHistory)
 app.get('/api/mt5/price', mt5.getPrice)
 app.get('/api/mt5/positions', mt5.getPositions)
 app.post('/api/mt5/order', mt5.postOrder)
@@ -36,6 +38,16 @@ app.post('/api/auth/login', auth.login)
 app.get('/api/auth/me', auth.me)
 
 // Analyse API (demo bars + daily analysis; when authenticated, save/load from DB)
+app.get('/api/analyse/day-detail', (req, res) => {
+  try {
+    const date = req.query.date || new Date().toISOString().slice(0, 10)
+    const symbol = req.query.symbol || 'XAUUSD'
+    const detail = getDayDetail(symbol, date)
+    res.json({ success: true, data: detail })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
 app.get('/api/analyse/bars', (req, res) => {
   try {
     const symbol = req.query.symbol || 'XAUUSD'
@@ -166,8 +178,20 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() })
 })
 
-// Serve React app for all other routes
-app.get('/{*splat}', (req, res) => {
+// App/server info voor dashboard-overzicht (welke server, poort)
+app.get('/api/app-info', (req, res) => {
+  const host = req.get('host') || `localhost:${PORT}`
+  res.json({
+    success: true,
+    data: {
+      apiServer: host,
+      port: PORT,
+    },
+  })
+})
+
+// Serve React app for all other routes (Express 5: geen * meer, gebruik regex)
+app.get(/\/(?!api\/).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
 

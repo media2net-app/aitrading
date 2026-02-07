@@ -33,6 +33,37 @@ type MT5Status = {
   success: boolean
   connected: boolean
   data?: { symbol?: string; bid?: number }
+  path?: string
+  statusFileExists?: boolean
+}
+
+type IntradayBar = {
+  time: string
+  hour: number
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+}
+
+type SuggestedEntry = {
+  time: string
+  hour: number
+  price: number
+  pattern: string
+  direction: 'BUY' | 'SELL'
+  confidence: number
+  reason: string
+}
+
+type DayDetail = {
+  date: string
+  symbol: string
+  daily: { open: number; high: number; low: number; close: number; volume: number; trend: string; patterns: Pattern[] } | null
+  intraday: IntradayBar[]
+  suggestedEntries: SuggestedEntry[]
+  dataSource: string
 }
 
 function trendLabel(trend: string) {
@@ -42,8 +73,9 @@ function trendLabel(trend: string) {
 }
 
 export default function AnalysePage() {
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState('2026-02-06')
   const [result, setResult] = useState<DailyResult | null>(null)
+  const [dayDetail, setDayDetail] = useState<DayDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mt5Status, setMt5Status] = useState<MT5Status | null>(null)
@@ -52,15 +84,34 @@ export default function AnalysePage() {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetchWithAuth(`/api/analyse/daily?date=${date}&symbol=${SYMBOL}`)
-      .then((res) => res.json())
-      .then((json) => {
+    setDayDetail(null)
+
+    async function parseJsonResponse(res: Response): Promise<unknown> {
+      const text = await res.text()
+      if (text.trimStart().startsWith('<')) {
+        throw new Error('Backend geeft geen JSON. Draait de server op poort 3001? Start met: node server.js')
+      }
+      try {
+        return JSON.parse(text)
+      } catch {
+        throw new Error('Ongeldig antwoord van de server. Start de backend met: node server.js')
+      }
+    }
+
+    Promise.all([
+      fetchWithAuth(`/api/analyse/daily?date=${date}&symbol=${SYMBOL}`).then(parseJsonResponse),
+      fetchWithAuth(`/api/analyse/day-detail?date=${date}&symbol=${SYMBOL}`).then(parseJsonResponse),
+    ])
+      .then(([dailyJson, detailJson]) => {
         if (cancelled) return
-        if (json.success) setResult(json.data)
-        else setError(json.error || 'Fout bij ophalen')
+        const daily = dailyJson as { success?: boolean; data?: DailyResult; error?: string }
+        const detail = detailJson as { success?: boolean; data?: DayDetail }
+        if (daily.success) setResult(daily.data ?? null)
+        else setError(daily.error || 'Fout bij ophalen')
+        if (detail.success) setDayDetail(detail.data ?? null)
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message || 'Netwerkfout')
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Netwerkfout')
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -85,8 +136,16 @@ export default function AnalysePage() {
       </div>
 
       {mt5Status && (
-        <div className={`rounded-lg border px-4 py-2 text-sm ${mt5Status.connected ? 'border-accent/30 bg-accent/5 text-accent' : 'border-dark-600 bg-dark-800/50 text-gray-400'}`}>
-          MT5: {mt5Status.connected ? `Verbonden ${mt5Status.data?.symbol ? `(${mt5Status.data.symbol})` : ''}` : 'Niet verbonden'}
+        <div className={`rounded-lg border px-4 py-3 text-sm ${mt5Status.connected ? 'border-accent/30 bg-accent/5 text-accent' : 'border-dark-600 bg-dark-800/50 text-gray-400'}`}>
+          <div className="font-medium">
+            MT5: {mt5Status.connected ? `Verbonden ${mt5Status.data?.symbol ? `(${mt5Status.data.symbol})` : ''}` : 'Niet verbonden'}
+          </div>
+          {!mt5Status.connected && (
+            <div className="mt-2 space-y-1 text-xs text-gray-500">
+              <p>De app kijkt naar <code className="rounded bg-dark-600 px-1 font-mono">{mt5Status.path || '…'}</code> voor <code className="rounded bg-dark-600 px-1">status.json</code>. Zet in je EA hetzelfde pad; de EA moet dat bestand daar schrijven met o.a. <code className="rounded bg-dark-600 px-1">connected: true</code>, <code className="rounded bg-dark-600 px-1">bid</code>, <code className="rounded bg-dark-600 px-1">ask</code>, <code className="rounded bg-dark-600 px-1">symbol</code>.</p>
+              <p>Ander pad? Zet <code className="rounded bg-dark-600 px-1">MT5_BOT_PATH</code> in je <code className="rounded bg-dark-600 px-1">.env</code> en herstart de server.</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -180,6 +239,74 @@ export default function AnalysePage() {
               <h2 className="text-lg font-semibold text-white">Patronen</h2>
               <p className="mt-2 text-sm text-gray-400">Geen patronen gedetecteerd voor deze dag.</p>
               <Link to="/dashboard/patronen" className="mt-2 inline-block text-sm text-accent hover:underline">Bekijk uitleg over patronen</Link>
+            </section>
+          )}
+
+          {dayDetail && dayDetail.intraday && dayDetail.intraday.length > 0 && (
+            <section className="rounded-xl border border-dark-600 bg-dark-800/50 p-6">
+              <h2 className="text-lg font-semibold text-white">Alle data {date} (1H-bars)</h2>
+              <p className="mt-1 text-sm text-gray-400">
+                Volledige reeks uurbalken voor analyse. Op basis van deze data zijn onderaan instapmomenten voor de trade bot voorgesteld.
+              </p>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-dark-500 text-gray-400">
+                      <th className="pb-2 pr-4">Tijd</th>
+                      <th className="pb-2 pr-4">Open</th>
+                      <th className="pb-2 pr-4">High</th>
+                      <th className="pb-2 pr-4">Low</th>
+                      <th className="pb-2 pr-4">Close</th>
+                      <th className="pb-2">Vol</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dayDetail.intraday.map((bar, i) => (
+                      <tr key={i} className="border-b border-dark-600/50">
+                        <td className="py-1.5 pr-4 font-mono text-white">{bar.time}</td>
+                        <td className="py-1.5 pr-4 text-gray-300">{bar.open.toFixed(2)}</td>
+                        <td className="py-1.5 pr-4 text-green-400">{bar.high.toFixed(2)}</td>
+                        <td className="py-1.5 pr-4 text-red-400">{bar.low.toFixed(2)}</td>
+                        <td className="py-1.5 pr-4 text-white">{bar.close.toFixed(2)}</td>
+                        <td className="py-1.5 text-gray-500">{bar.volume}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {dayDetail && dayDetail.suggestedEntries && dayDetail.suggestedEntries.length > 0 && (
+            <section className="rounded-xl border border-accent/30 bg-accent/5 p-6">
+              <h2 className="text-lg font-semibold text-accent">Instapmomenten voor de trade bot</h2>
+              <p className="mt-1 text-sm text-gray-400">
+                Waar de bot op basis van patronen in had kunnen zetten (tijd, prijs, richting).
+              </p>
+              <ul className="mt-4 space-y-3">
+                {dayDetail.suggestedEntries.map((e, i) => (
+                  <li
+                    key={i}
+                    className="flex flex-wrap items-center gap-3 rounded-lg border border-dark-600 bg-dark-800/50 px-4 py-3"
+                  >
+                    <span className="font-mono font-medium text-white">{e.time}</span>
+                    <span className="text-white">{e.price.toFixed(2)}</span>
+                    <span className={`rounded px-2 py-0.5 text-sm font-medium ${e.direction === 'BUY' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                      {e.direction}
+                    </span>
+                    <span className="text-gray-300">{e.pattern}</span>
+                    <span className="text-xs text-gray-500">{(e.confidence * 100).toFixed(0)}%</span>
+                    <span className="w-full text-sm text-gray-400 sm:w-auto">{e.reason}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {dayDetail && dayDetail.suggestedEntries && dayDetail.suggestedEntries.length === 0 && dayDetail.intraday?.length > 0 && (
+            <section className="rounded-xl border border-dark-600 bg-dark-800/50 p-6">
+              <h2 className="text-lg font-semibold text-white">Instapmomenten</h2>
+              <p className="mt-2 text-sm text-gray-400">Geen duidelijke instapmomenten gedetecteerd op basis van de huidige patronen voor deze dag.</p>
             </section>
           )}
         </>
