@@ -1,12 +1,20 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
-const { EmailService } = require('./src/services/emailService.cjs')
 const mt5 = require('./api/mt5Bridge')
 const { getBarsInRange } = require('./api/marketData')
 const { getDailyAnalysis } = require('./api/analyseService')
 const auth = require('./api/auth')
 const { getPrisma, hasDatabase } = require('./api/db')
+
+let emailService = null
+try {
+  const { EmailService } = require('./src/services/emailService.cjs')
+  emailService = new EmailService()
+} catch (err) {
+  console.warn('EmailService niet geladen:', err.message)
+}
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -15,9 +23,6 @@ const PORT = process.env.PORT || 3001
 app.use(cors())
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'dist')))
-
-// Initialize email service
-const emailService = new EmailService()
 
 // MT5 API (file-based bridge)
 app.get('/api/mt5/status', mt5.getStatus)
@@ -112,6 +117,9 @@ app.get('/api/analyses', auth.requireAuth, async (req, res) => {
 // API Routes
 app.post('/api/signup', async (req, res) => {
   try {
+    if (!emailService) {
+      return res.status(503).json({ success: false, message: 'E-mailservice niet beschikbaar' })
+    }
     const { name, email, motivation, answers } = req.body
 
     // Validate required fields
@@ -159,7 +167,7 @@ app.get('/api/health', (req, res) => {
 })
 
 // Serve React app for all other routes
-app.get('*', (req, res) => {
+app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
 
