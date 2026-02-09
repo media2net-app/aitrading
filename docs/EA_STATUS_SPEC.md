@@ -55,16 +55,11 @@ Optioneel: `openPositions` (array van posities) voor de app.
 }
 ```
 
-## Kant-en-klaar MQL5-bestand
+## EA: AITradingBot.mq5
 
-In de map **ea/** staat een include die je in je EA kunt gebruiken:
+In de map **ea/** staat **AITradingBot.mq5**. Die EA schrijft **status.json** (elke seconde) en leest **commands.json** om orders te plaatsen. Zie **ea/README.md** voor installatie en BotFilePath.
 
-- **ea/MT5_StatusWriter.mqh** – functie `WriteMT5Status()` die alle MT5-gegevens (login, server, company, mode, bid, ask, symbol) naar status.json schrijft.
-- **ea/README.md** – uitleg hoe je de .mqh in je EA includeert en aanroept (OnTick of OnTimer).
-
-Kopieer `MT5_StatusWriter.mqh` naar je MQL5 Include-map, voeg `#include <MT5_StatusWriter.mqh>` toe aan je EA en roep in `OnTick()` of `OnTimer()` (elke 1–2 s) `WriteMT5Status()` aan. Dan vult de EA status.json op elke PC met de eigen rekening/server/broker.
-
-**Let op:** De .mqh schrijft naar **Terminal Common\\Files\\MT5_AI_Bot\\status.json** (`FILE_COMMON`). Zet `MT5_BOT_PATH` in de app op hetzelfde map op die PC (zie ea/README.md).
+**Let op:** De EA schrijft naar **Terminal Common\\Files\\MT5_AI_Bot\\status.json** (`FILE_COMMON`). Zet `MT5_BOT_PATH` in de app op hetzelfde map op die PC.
 
 ## Prioriteit: EA overschrijft .env
 

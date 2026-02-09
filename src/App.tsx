@@ -18,6 +18,7 @@ import DashboardLayout from './layouts/DashboardLayout'
 import DashboardPage from './pages/DashboardPage'
 import PatronenPage from './pages/PatronenPage'
 import AnalysePage from './pages/AnalysePage'
+import TradeBotPage from './pages/TradeBotPage'
 import RegisterPage from './pages/RegisterPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -63,6 +64,7 @@ export default function App() {
         <Route index element={<DashboardPage />} />
         <Route path="patronen" element={<PatronenPage />} />
         <Route path="analyse" element={<AnalysePage />} />
+        <Route path="trade-bot" element={<TradeBotPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

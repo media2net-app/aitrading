@@ -27,6 +27,7 @@ app.use(express.static(path.join(__dirname, 'dist')))
 // MT5 API (file-based bridge)
 app.get('/api/mt5/status', mt5.getStatus)
 app.get('/api/mt5/path', mt5.getPath)
+app.get('/api/mt5/log', mt5.getBridgeLog)
 app.get('/api/mt5/equity-history', mt5.getEquityHistory)
 app.get('/api/mt5/price', mt5.getPrice)
 app.get('/api/mt5/positions', mt5.getPositions)
@@ -37,12 +38,19 @@ app.post('/api/auth/register', auth.register)
 app.post('/api/auth/login', auth.login)
 app.get('/api/auth/me', auth.me)
 
-// Analyse API (demo bars + daily analysis; when authenticated, save/load from DB)
-app.get('/api/analyse/day-detail', (req, res) => {
+// Analyse API (live MT5 candles wanneer EA reageert, anders demo; vandaag nooit toekomstige uren)
+app.get('/api/analyse/day-detail', async (req, res) => {
   try {
     const date = req.query.date || new Date().toISOString().slice(0, 10)
     const symbol = req.query.symbol || 'XAUUSD'
-    const detail = getDayDetail(symbol, date)
+    const mt5Symbol = symbol === 'XAUUSD' ? mt5.getGoldSymbol?.() || symbol : symbol
+    let detail
+    const candles = await mt5.bridge.getCandles(mt5Symbol, 'H1', 48)
+    if (candles && candles.candles && candles.candles.length > 0) {
+      detail = getDayDetail(symbol, date, { mt5Candles: candles.candles })
+    } else {
+      detail = getDayDetail(symbol, date)
+    }
     res.json({ success: true, data: detail })
   } catch (err) {
     res.status(500).json({ success: false, error: err.message })

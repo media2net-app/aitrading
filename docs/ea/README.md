@@ -1,44 +1,44 @@
-# EA: MT5-gegevens naar status.json
+# AITradingBot.mq5
 
-De webapp leest **status.json** uit de MT5_AI_Bot-map. De EA moet dit bestand regelmatig overschrijven met actuele MT5-gegevens (rekening, server, broker, bid/ask, balance, equity, profit, openPositions).
+De enige EA in dit project. Leest **commands.json** (van de webapp), plaatst orders in MT5, en schrijft **status.json** en **responses.json**.
 
-**Versie:** Gebruik **v5.0** (bestand **`MT5_REST_API_EA.mq5`**). Dit is de volledige originele EA (request/response, place-order, candles, enz.) met status.json voor het dashboard. Geen aparte .mqh nodig: alles staat in één bestand.
+## Installatie
 
-Vervang in MetaEditor je oude v4.1 door de inhoud van **`docs/ea/MT5_REST_API_EA.mq5`** uit dit project.
+1. **Kopieer `docs/ea/AITradingBot.mq5`** naar je MT5 Experts-map (bijv. `MQL5/Experts/Advisors/`) en compileer in MetaEditor (F7).
+2. Sleep **AITradingBot** op een XAUUSD- of GOLD-chart en zet **AutoTrading** aan.
+3. **BotFilePath** (EA-input) en **MT5_BOT_PATH** (.env) moeten op de **zelfde fysieke map** wijzen.
 
-## Gebruik in je EA
+## Pad (FILE_COMMON)
 
-1. **Kopieer `MT5_REST_API_EA.mq5`** naar je Experts-map (bijv. `MQL5/Experts/`) en compileer. De status.json-logica (balance, equity, profit, openPositions) zit erin; er is **geen** `MT5_StatusWriter.mqh` meer nodig.
+De EA gebruikt `FILE_COMMON`: het pad is relatief t.o.v. **Terminal Common\Files**.
 
-2. **Optioneel:** Voor een andere EA kun je **`MT5_StatusWriter.mqh`** includen en `WriteMT5Status()` aanroepen in OnTick/OnTimer. Voor de standaard REST API EA is dat niet nodig; die gebruikt de ingebouwde status-logica.
+- **Mac/Wine:** Vaak  
+  `~/Library/Application Support/net.metaquotes.wine.metatrader5/drive_c/users/user/AppData/Roaming/MetaQuotes/Terminal/Common/Files/MT5_AI_Bot`  
+  In MT5: File → Open Data Folder → ga naar `Terminal/Common/Files`, maak map `MT5_AI_Bot`. EA **BotFilePath** = `MT5_AI_Bot/`.
+- **.env:** `MT5_BOT_PATH=<volledig pad naar die map>` (zelfde als waar de EA schrijft).
 
-## Pad naar status.json
+## EA-inputs
 
-De .mqh schrijft naar **Terminal Common\Files\MT5_AI_Bot\status.json** (`FILE_COMMON`).
+| Input       | Beschrijving |
+|-----------|--------------|
+| BotFilePath | Map onder Common\Files, bijv. `MT5_AI_Bot/` |
+| TradeSymbol | XAUUSD of GOLD (broker-afhankelijk) |
+| MagicNumber | Magic number voor deze EA |
 
-- **Windows:** Vaak `C:\Users\Public\Documents\MetaQuotes\Terminal\Common\Files\MT5_AI_Bot\` of onder AppData. Zoek op die PC naar de map waar `status.json` verschijnt nadat de EA eenmaal heeft gedraaid.
-- **App (MT5_BOT_PATH):** Zet in de webapp op die PC in `.env` het **zelfde** pad, bijv.  
-  `MT5_BOT_PATH=C:\Users\Public\Documents\MetaQuotes\Terminal\Common\Files\MT5_AI_Bot`  
-  (of het pad dat op jouw installatie geldt).
+## Flow
 
-Dan toont het dashboard automatisch rekeningnummer, server, broker en modus uit de EA.
+- De app schrijft **commands.json** (action PLACE_ORDER of CLOSE_ORDER).
+- De EA leest het bestand in OnTick, voert de order uit, schrijft **responses.json** en verwijdert **commands.json**.
+- De EA schrijft elke seconde **status.json** (bid, ask, symbol, openPositions, timestamp).
 
-## Velden in status.json
+## Bridge-log (connectie testen)
 
-| Veld        | Bron in MQL5 |
-|------------|----------------|
-| connected  | true |
-| symbol     | Symbol() |
-| bid, ask   | SymbolInfoDouble(SYMBOL_BID/ASK) |
-| balance    | AccountInfoDouble(ACCOUNT_BALANCE) |
-| equity     | AccountInfoDouble(ACCOUNT_EQUITY) |
-| profit     | AccountInfoDouble(ACCOUNT_PROFIT) |
-| openPositions | Loop PositionsTotal() → ticket, symbol, type, volume, profit, sl, tp |
-| login      | AccountInfoInteger(ACCOUNT_LOGIN) |
-| server     | AccountInfoString(ACCOUNT_SERVER) |
-| company    | AccountInfoString(ACCOUNT_COMPANY) |
-| mode       | AccountInfoInteger(ACCOUNT_TRADE_MODE) → Hedge/Full/… |
+De bridge schrijft naar **bridge.log** (in dezelfde map als status.json, o.a. `MT5_AI_Bot/bridge.log`):
 
-De EA **MT5_StatusWriter.mqh** schrijft al balance, equity, profit en openPositions. Daarmee toont het dashboard echte Balance, P&L en Open trades; de equity-curve wordt opgebouwd uit de equity-history (per status-request een punt).
+- **readStatus:** of status gelezen is, welk pad, aantal openPositions.
+- **placeOrder:** order weggeschreven, orderId, type, symbol, volume.
+- **waitForResponse:** response ontvangen of timeout.
 
-Zie ook **../EA_STATUS_SPEC.md**.
+Gebruik `tail -f <pad-naar-MT5_AI_Bot>/bridge.log` om live te zien of de connectie werkt. Het pad staat in de API-response onder `bridge.logFile`.
+
+Zie **../EA_STATUS_SPEC.md** voor de velden in status.json.

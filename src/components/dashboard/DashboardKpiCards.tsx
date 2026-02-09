@@ -27,10 +27,15 @@ export default function DashboardKpiCards() {
   const [mt5, setMt5] = useState<MT5Status | null>(null)
 
   useEffect(() => {
-    fetch('/api/mt5/status')
-      .then((r) => r.json())
-      .then(setMt5)
-      .catch(() => setMt5(null))
+    const fetchStatus = () => {
+      fetch('/api/mt5/status')
+        .then((r) => r.json())
+        .then(setMt5)
+        .catch(() => setMt5(null))
+    }
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const balance = mt5?.data?.balance

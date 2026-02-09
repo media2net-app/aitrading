@@ -27,7 +27,7 @@ function getMT5Path() {
   )
 }
 
-/** Alternatieve paden waar de EA (FILE_COMMON) status.json kan schrijven. Probeer deze als primair pad geen balance/equity heeft. */
+/** Alternatieve paden waar de EA (FILE_COMMON) status.json kan schrijven. */
 function getAlternateMT5Paths() {
   const primary = getMT5Path()
   const candidates = [primary]
@@ -37,13 +37,191 @@ function getAlternateMT5Paths() {
   return [...new Set(candidates)]
 }
 
+const MAC_WINE_MT5_BASE =
+  process.platform === 'darwin'
+    ? path.join(
+        os.homedir(),
+        'Library',
+        'Application Support',
+        'net.metaquotes.wine.metatrader5',
+        'drive_c',
+        'Program Files',
+        'MetaTrader 5'
+      )
+    : null
+
+/**
+ * Mac/Wine: FILE_COMMON wijst soms naar MQL5/Files/Common (onder Program Files).
+ * Error 5004 = file not found → EA zoekt hier. Schrijf commands.json ook naar deze map.
+ */
+function getMacWineMQL5CommonBotPath() {
+  if (!MAC_WINE_MT5_BASE) return null
+  return path.join(MAC_WINE_MT5_BASE, 'MQL5', 'Files', 'Common', 'MT5_AI_Bot')
+}
+
+/**
+ * Mac/Wine: sommige builds gebruiken MQL5/Files (zonder Common) voor FILE_COMMON.
+ * Schrijf commands.json ook hier zodat de EA het vindt.
+ */
+function getMacWineMQL5FilesBotPath() {
+  if (!MAC_WINE_MT5_BASE) return null
+  return path.join(MAC_WINE_MT5_BASE, 'MQL5', 'Files', 'MT5_AI_Bot')
+}
+
+/** Alle Mac/Wine paden waar de EA mogelijk zoekt (FILE_COMMON kan per build verschillen). */
+function getMacWineBotPaths() {
+  const paths = []
+  const common = getMacWineMQL5CommonBotPath()
+  const files = getMacWineMQL5FilesBotPath()
+  if (common) paths.push(common)
+  if (files) paths.push(files)
+  return paths
+}
+
+/** Mac/Wine: root van FILE_COMMON (Terminal/Common/Files). EA-fallback leest FileOpen("commands.json") daar. */
+function getMacWineFileCommonRootPaths() {
+  if (process.platform !== 'darwin') return []
+  const base = path.join(
+    os.homedir(),
+    'Library',
+    'Application Support',
+    'net.metaquotes.wine.metatrader5',
+    'drive_c'
+  )
+  return [
+    path.join(base, 'users', 'user', 'AppData', 'Roaming', 'MetaQuotes', 'Terminal', 'Common', 'Files'),
+    path.join(base, 'users', 'Public', 'AppData', 'Roaming', 'MetaQuotes', 'Terminal', 'Common', 'Files'),
+    path.join(base, 'users', 'default', 'AppData', 'Roaming', 'MetaQuotes', 'Terminal', 'Common', 'Files'),
+  ]
+}
+
+/**
+ * Oude aittrader-conventie: EA gebruikt FilePath "C:/Users/Public/Documents/MT5_AI_Bot/".
+ * Optie A: FILE_COMMON + C: = submap onder Common\Files → Common\Files\C\Users\...\MT5_AI_Bot
+ * Optie B: FILE_COMMON + C: = virtuele C:-drive → drive_c\Users\Public\Documents\MT5_AI_Bot
+ * Beide paden worden beschreven.
+ */
+function getMacWineCPathBotDirs() {
+  if (process.platform !== 'darwin') return []
+  const base = path.join(
+    os.homedir(),
+    'Library',
+    'Application Support',
+    'net.metaquotes.wine.metatrader5',
+    'drive_c'
+  )
+  const underCommon = path.join('MetaQuotes', 'Terminal', 'Common', 'Files', 'C', 'Users', 'Public', 'Documents', 'MT5_AI_Bot')
+  const dirs = [
+    path.join(base, 'users', 'user', 'AppData', 'Roaming', underCommon),
+    path.join(base, 'users', 'Public', 'AppData', 'Roaming', underCommon),
+    path.join(base, 'users', 'default', 'AppData', 'Roaming', underCommon),
+  ]
+  return dirs
+}
+
+/** Virtuele C:-drive: C:\Users\Public\Documents\MT5_AI_Bot. Op Mac Wine: drive_c/users/Public/Documents/MT5_AI_Bot (kleine users). */
+function getMacWineDriveCBotDirs() {
+  if (process.platform !== 'darwin') return []
+  const base = path.join(
+    os.homedir(),
+    'Library',
+    'Application Support',
+    'net.metaquotes.wine.metatrader5',
+    'drive_c'
+  )
+  return [
+    path.join(base, 'users', 'Public', 'Documents', 'MT5_AI_Bot'),
+    path.join(base, 'users', 'user', 'Documents', 'MT5_AI_Bot'),
+  ]
+}
+
+/**
+ * Met FILE_COMMON is het pad relatief t.o.v. Terminal Common\Files.
+ * EA met BotFilePath "C:/Users/Public/Documents/MT5_AI_Bot/" zoekt dus naar
+ * Common\Files\C\Users\Public\Documents\MT5_AI_Bot\commands.json
+ */
+function getFileCommonCommandPaths() {
+  const bases = [
+    path.join(os.homedir(), '.wine', 'drive_c', 'Users', 'Public', 'Documents', 'MetaQuotes', 'Terminal', 'Common', 'Files'),
+    path.join(os.homedir(), '.wine', 'drive_c', 'Users', 'Public', 'AppData', 'Roaming', 'MetaQuotes', 'Terminal', 'Common', 'Files'),
+    path.join(os.homedir(), '.wine', 'drive_c', 'users', 'Public', 'AppData', 'Roaming', 'MetaQuotes', 'Terminal', 'Common', 'Files'),
+  ]
+  if (process.env.MT5_COMMON_FILES) {
+    bases.unshift(process.env.MT5_COMMON_FILES)
+  }
+  return bases.map((b) => path.join(b, 'C', 'Users', 'Public', 'Documents', 'MT5_AI_Bot', 'commands.json'))
+}
+
+/** Pad naar bridge-logfile (zelfde map als status.json). */
+function getBridgeLogPath() {
+  const p = getMT5Path()
+  return path.join(p, 'bridge.log')
+}
+
+/** Schrijf regel naar bridge.log (timestamp + msg) om connectie te kunnen testen. */
+function bridgeLog(msg) {
+  const line = `${new Date().toISOString()} ${msg}\n`
+  const targets = [getBridgeLogPath()]
+  for (const dir of getMacWineBotPaths()) {
+    targets.push(path.join(dir, 'bridge.log'))
+  }
+  for (const logPath of targets) {
+    try {
+      const dir = path.dirname(logPath)
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+      fs.appendFileSync(logPath, line, 'utf8')
+    } catch {
+      // negeer
+    }
+  }
+}
+
 class MT5Bridge {
   constructor() {
     this.mt5Path = getMT5Path()
     this.commandFile = path.join(this.mt5Path, 'commands.json')
     this.responseFile = path.join(this.mt5Path, 'responses.json')
     this.statusFile = path.join(this.mt5Path, 'status.json')
+    this.requestFile = path.join(this.mt5Path, 'mt5_request.txt')
+    this.responseTxtFile = path.join(this.mt5Path, 'mt5_response.txt')
     this.ensureDirectory()
+  }
+
+  /**
+   * Vraag candles op bij de EA (file-based: mt5_request.txt / mt5_response.txt).
+   * Retourneert { candles: [{ time, open, high, low, close, volume }] } of null.
+   */
+  async getCandles(symbol, timeframe, count) {
+    const reqLine = `GET /candles/${symbol || 'XAUUSD'}/${timeframe || 'H1'}/${count || 48}\n`
+    try {
+      fs.writeFileSync(this.requestFile, reqLine, 'utf8')
+    } catch {
+      return null
+    }
+    const deadline = Date.now() + 5000
+    const pollMs = 300
+    let lastSize = -1
+    while (Date.now() < deadline) {
+      try {
+        if (!fs.existsSync(this.responseTxtFile)) {
+          await new Promise((r) => setTimeout(r, pollMs))
+          continue
+        }
+        const stat = fs.statSync(this.responseTxtFile)
+        const size = stat.size
+        if (size > 0 && size !== lastSize) {
+          lastSize = size
+          const content = fs.readFileSync(this.responseTxtFile, 'utf8')
+          const json = JSON.parse(content)
+          if (json.error) return null
+          if (json.candles && Array.isArray(json.candles)) return json
+        }
+      } catch {
+        // nog geen geldige response
+      }
+      await new Promise((r) => setTimeout(r, pollMs))
+    }
+    return null
   }
 
   /** Lees status.json van een gegeven map. Retourneert { status, keysInFile, mtime } of null. */
@@ -106,10 +284,11 @@ class MT5Bridge {
 
   /**
    * Lees status: probeer alle paden, prefereer EA-status (version/login, geen demo) boven demo.
+   * Inclusief Mac/Wine MQL5/Files/Common (FILE_COMMON) voor live posities.
    * Retourneert { status, diagnostics } met diagnostics = { pathUsed, keysInFile, fileLastModified }.
    */
   readStatus() {
-    const alternates = getAlternateMT5Paths()
+    const alternates = [this.mt5Path, ...getMacWineBotPaths()]
     const candidates = []
     for (const dir of alternates) {
       const r = this.readStatusFromPath(dir)
@@ -153,12 +332,17 @@ class MT5Bridge {
         result = r
       }
     }
-    if (!result) return { status: null, diagnostics: null }
+    if (!result) {
+      bridgeLog('readStatus: geen status gevonden (geen geldig status.json op geen van de paden)')
+      return { status: null, diagnostics: null }
+    }
     const eq = result.status.equity
     const eqNum = typeof eq === 'number' ? eq : Number(eq)
     if (result.status && !Number.isNaN(eqNum)) {
       this.appendEquitySnapshot(eqNum)
     }
+    const posCount = Array.isArray(result.status.openPositions) ? result.status.openPositions.length : 0
+    bridgeLog(`readStatus: OK path=${result.pathUsed} openPositions=${posCount} bid=${result.status.bid ?? '-'} ask=${result.status.ask ?? '-'}`)
     return {
       status: result.status,
       diagnostics: {
@@ -204,15 +388,20 @@ class MT5Bridge {
   placeOrder(order) {
     const orderId = `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     const riskAmount = order.riskAmount ?? 20
-    const tp1 = order.type === 'BUY'
-      ? order.entryPrice + riskAmount * 2
-      : order.entryPrice - riskAmount * 2
-    const tp2 = order.type === 'BUY'
-      ? order.entryPrice + riskAmount * 3
-      : order.entryPrice - riskAmount * 3
-    const tp3 = order.type === 'BUY'
-      ? order.entryPrice + riskAmount * 4
-      : order.entryPrice - riskAmount * 4
+    let tp1 = order.tp1 != null ? Number(order.tp1) : null
+    let tp2 = order.tp2 != null ? Number(order.tp2) : null
+    let tp3 = order.tp3 != null ? Number(order.tp3) : null
+    if (tp1 == null || tp2 == null || tp3 == null) {
+      tp1 = order.type === 'BUY'
+        ? order.entryPrice + riskAmount * 2
+        : order.entryPrice - riskAmount * 2
+      tp2 = order.type === 'BUY'
+        ? order.entryPrice + riskAmount * 3
+        : order.entryPrice - riskAmount * 3
+      tp3 = order.type === 'BUY'
+        ? order.entryPrice + riskAmount * 4
+        : order.entryPrice - riskAmount * 4
+    }
 
     const symbol = (order.symbol === 'XAUUSD' || !order.symbol) ? getGoldSymbol() : order.symbol
     const command = {
@@ -223,17 +412,134 @@ class MT5Bridge {
       volume: order.volume,
       entryPrice: order.entryPrice,
       stopLoss: order.stopLoss,
-      tp1: tp1.toFixed(5),
-      tp2: tp2.toFixed(5),
-      tp3: tp3.toFixed(5),
+      tp1: Number(tp1).toFixed(5),
+      tp2: Number(tp2).toFixed(5),
+      tp3: Number(tp3).toFixed(5),
       timestamp: Date.now(),
     }
 
+    const commandStr = JSON.stringify(command, null, 2)
     try {
-      fs.writeFileSync(this.commandFile, JSON.stringify(command, null, 2))
+      const pathsWritten = []
+      fs.writeFileSync(this.commandFile, commandStr)
+      pathsWritten.push(this.mt5Path)
+      // 5004 = file not found: FILE_COMMON kan per MT5-sessie anders wijzen. Schrijf naar alle mogelijke paden.
+      for (const dir of getMacWineBotPaths()) {
+        try {
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+          fs.writeFileSync(path.join(dir, 'commands.json'), commandStr)
+          pathsWritten.push(dir)
+        } catch {
+          // negeer
+        }
+      }
+      // EA-fallback: FileOpen("commands.json", FILE_COMMON) leest uit root van FILE_COMMON
+      for (const commonRoot of getMacWineFileCommonRootPaths()) {
+        try {
+          if (!fs.existsSync(commonRoot)) fs.mkdirSync(commonRoot, { recursive: true })
+          fs.writeFileSync(path.join(commonRoot, 'commands.json'), commandStr)
+          pathsWritten.push(commonRoot + ' (root)')
+        } catch {
+          // negeer
+        }
+      }
+      // H1: Oude aittrader: EA FilePath "C:/Users/Public/Documents/MT5_AI_Bot/" → Common\Files\C\Users\... of virtuele C:
+      for (const dir of getMacWineCPathBotDirs()) {
+        try {
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+          fs.writeFileSync(path.join(dir, 'commands.json'), commandStr)
+          pathsWritten.push(dir + ' (C: under Common)')
+        } catch {
+          // negeer
+        }
+      }
+      for (const dir of getMacWineDriveCBotDirs()) {
+        try {
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+          fs.writeFileSync(path.join(dir, 'commands.json'), commandStr)
+          pathsWritten.push(dir + ' (C: drive)')
+        } catch {
+          // negeer
+        }
+      }
+      bridgeLog(`placeOrder: written orderId=${orderId} type=${order.type} symbol=${symbol} volume=${order.volume} paths=${pathsWritten.length}`)
+      // #region agent log
+      const allDirs = [this.mt5Path, ...getMacWineBotPaths(), ...getMacWineFileCommonRootPaths(), ...getMacWineCPathBotDirs()]
+      const existence = allDirs.map((d) => ({ dir: d, cmdPath: path.join(d, 'commands.json'), exists: fs.existsSync(path.join(d, 'commands.json')) }))
+      fetch('http://127.0.0.1:7244/ingest/a8b5dd67-6fd0-4e9c-a85f-a5933fd1230e', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'mt5Bridge.js:placeOrder', message: 'placeOrder paths and existence', data: { orderId, mt5Path: this.mt5Path, pathsWritten: pathsWritten.length, existence }, timestamp: Date.now(), hypothesisId: 'H2,H4,H5' }) }).catch(() => {})
+      // #endregion
       return { success: true, orderId, message: 'Order commando geschreven' }
     } catch (err) {
       return { success: false, message: err.message }
+    }
+  }
+
+  /**
+   * Poll voor responses.json met matching orderId (EA schrijft dit na verwerking).
+   * Retourneert Promise<{ success, message } | null> bij timeout.
+   */
+  waitForResponse(orderId, timeoutMs = 15000) {
+    const pollMs = 300
+    const responsePaths = [this.responseFile]
+    for (const dir of getMacWineBotPaths()) {
+      responsePaths.push(path.join(dir, 'responses.json'))
+    }
+    for (const d of getMacWineCPathBotDirs()) responsePaths.push(path.join(d, 'responses.json'))
+    for (const d of getMacWineDriveCBotDirs()) responsePaths.push(path.join(d, 'responses.json'))
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/a8b5dd67-6fd0-4e9c-a85f-a5933fd1230e', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'mt5Bridge.js:waitForResponse', message: 'waitForResponse started', data: { orderId, responsePaths, responseFileExists: responsePaths.map((p) => ({ p, exists: fs.existsSync(p) })) }, timestamp: Date.now(), hypothesisId: 'H3' }) }).catch(() => {})
+    // #endregion
+    return new Promise((resolve) => {
+      const deadline = Date.now() + timeoutMs
+      const interval = setInterval(() => {
+        if (Date.now() > deadline) {
+          clearInterval(interval)
+          bridgeLog(`waitForResponse: timeout orderId=${orderId} (geen response van EA binnen ${timeoutMs}ms)`)
+          // #region agent log
+          const existsAtTimeout = responsePaths.map((p) => ({ p, exists: fs.existsSync(p) }))
+          fetch('http://127.0.0.1:7244/ingest/a8b5dd67-6fd0-4e9c-a85f-a5933fd1230e', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'mt5Bridge.js:waitForResponse', message: 'waitForResponse timeout', data: { orderId, existsAtTimeout }, timestamp: Date.now(), hypothesisId: 'H3,H5' }) }).catch(() => {})
+          // #endregion
+          resolve(null)
+          return
+        }
+        for (const responsePath of responsePaths) {
+          try {
+            if (!fs.existsSync(responsePath)) continue
+            const content = fs.readFileSync(responsePath, 'utf8')
+            const data = JSON.parse(content)
+            if (data.orderId === orderId) {
+              clearInterval(interval)
+              try { fs.unlinkSync(responsePath) } catch { /* ignore */ }
+              bridgeLog(`waitForResponse: OK orderId=${orderId} success=${!!data.success} message=${(data.message || '').slice(0, 80)}`)
+              resolve({ success: !!data.success, message: data.message || '' })
+              return
+            }
+          } catch {
+            // nog geen geldige response of parse error
+          }
+        }
+      }, pollMs)
+    })
+  }
+
+  /**
+   * Schrijf order en wacht op EA-response. Retourneert Promise met resultaat van EA of timeout.
+   */
+  async placeOrderAndWait(order, timeoutMs = 15000) {
+    const writeResult = this.placeOrder(order)
+    if (!writeResult.success) return writeResult
+    const response = await this.waitForResponse(writeResult.orderId, timeoutMs)
+    if (response === null) {
+      return {
+        success: false,
+        orderId: writeResult.orderId,
+        message: 'Geen response van EA (timeout). Controleer of AITradingBot.mq5 draait en FilePath klopt.',
+      }
+    }
+    return {
+      success: response.success,
+      orderId: writeResult.orderId,
+      message: response.message,
     }
   }
 }
@@ -297,6 +603,7 @@ function getStatus(req, res) {
         pathUsed: diagnostics?.pathUsed ?? bridge.mt5Path,
         keysInFile: diagnostics?.keysInFile ?? [],
         fileLastModified: diagnostics?.fileLastModified ?? null,
+        logFile: getBridgeLogPath(),
         fieldsWeCanFetch: [
           'connected', 'symbol', 'bid', 'ask', 'spread', 'timestamp',
           'login', 'server', 'company', 'mode', 'version',
@@ -316,6 +623,31 @@ function getPath(req, res) {
       path: bridge.mt5Path,
       statusFile: bridge.statusFile,
       statusFileExists: fs.existsSync(bridge.statusFile),
+    })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+}
+
+/** GET /api/mt5/log – inhoud van bridge.log (terminal log voor dashboard). */
+function getBridgeLog(req, res) {
+  try {
+    const logPath = getBridgeLogPath()
+    const maxLines = Math.min(parseInt(req.query.lines, 10) || 500, 2000)
+    let content = ''
+    if (fs.existsSync(logPath)) {
+      const raw = fs.readFileSync(logPath, 'utf8')
+      const lines = raw.split('\n').filter(Boolean)
+      const slice = lines.length > maxLines ? lines.slice(-maxLines) : lines
+      content = slice.join('\n')
+    }
+    res.json({
+      success: true,
+      data: {
+        content,
+        path: logPath,
+        empty: !content,
+      },
     })
   } catch (err) {
     res.status(500).json({ success: false, error: err.message })
@@ -382,24 +714,27 @@ function getPositions(req, res) {
   }
 }
 
-function postOrder(req, res) {
+async function postOrder(req, res) {
   try {
-    const { type, volume, entryPrice, stopLoss, symbol, riskAmount } = req.body
+    const { type, volume, entryPrice, stopLoss, symbol, riskAmount, tp1, tp2, tp3 } = req.body
     if (!type || volume == null || entryPrice == null || stopLoss == null) {
       return res.status(400).json({
         success: false,
         error: 'Ontbrekende parameters (type, volume, entryPrice, stopLoss)',
       })
     }
-    const result = bridge.placeOrder({
+    const result = await bridge.placeOrderAndWait({
       type,
       symbol: symbol || 'XAUUSD',
       volume: Number(volume),
       entryPrice: Number(entryPrice),
       stopLoss: Number(stopLoss),
       riskAmount: riskAmount != null ? Number(riskAmount) : undefined,
-    })
-    res.json({ success: result.success, data: result })
+      tp1: tp1 != null ? Number(tp1) : undefined,
+      tp2: tp2 != null ? Number(tp2) : undefined,
+      tp3: tp3 != null ? Number(tp3) : undefined,
+    }, 15000)
+    res.json({ success: result.success, data: result, error: result.success ? undefined : result.message })
   } catch (err) {
     res.status(500).json({ success: false, error: err.message })
   }
@@ -407,8 +742,10 @@ function postOrder(req, res) {
 
 module.exports = {
   bridge,
+  getGoldSymbol,
   getStatus,
   getPath,
+  getBridgeLog,
   getEquityHistory,
   getPrice,
   getPositions,

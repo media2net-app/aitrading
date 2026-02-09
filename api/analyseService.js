@@ -1,8 +1,9 @@
 /**
  * Daily analyse: market summary + simple pattern detection from bars.
  * Day detail: intraday bars + pattern-based suggested entries for the trade bot.
+ * Ondersteunt live MT5-candles (EA) voor echte XAUUSD-data.
  */
-const { getBarsInRange, getIntradayBarsForDate, isFutureDate, isWeekend } = require('./marketData')
+const { getBarsInRange, getIntradayBarsForDate, getTodayStr, isFutureDate, isWeekend } = require('./marketData')
 
 const CONTEXT_DAYS = 5
 
@@ -159,17 +160,97 @@ function detectPatterns(bars, targetDate) {
 
 // --- Dagdetail: intraday bars + voorgestelde instapmomenten voor de bot ---
 
-function getDayDetail(symbol, dateStr) {
-  const daily = getDailyAnalysis(symbol, dateStr)
-  const intraday = getIntradayBarsForDate(symbol, dateStr, '1H')
+/** Zet MT5-candle (EA) om naar ons intraday bar-formaat. time kan "YYYY.MM.DD HH:MM:SS" of ISO zijn. */
+function mapMT5CandlesToBars(candles, dateStr) {
+  if (!candles || !Array.isArray(candles)) return []
+  const todayStr = getTodayStr()
+  const now = Date.now()
+  const bars = []
+  for (const c of candles) {
+    let t
+    if (typeof c.time === 'string') {
+      const s = c.time.trim()
+      const normalized = s.replace(/\./g, '-').replace(' ', 'T')
+      t = new Date(normalized)
+    } else if (typeof c.time === 'number') {
+      t = new Date(c.time * 1000)
+    } else {
+      continue
+    }
+    if (Number.isNaN(t.getTime())) continue
+    const barDate = t.toISOString().slice(0, 10)
+    if (barDate !== dateStr) continue
+    const ts = t.getTime()
+    if (dateStr === todayStr && ts > now) continue
+    bars.push({
+      timestamp: ts,
+      date: barDate,
+      time: t.toISOString().slice(11, 16),
+      hour: t.getUTCHours(),
+      open: Number(c.open),
+      high: Number(c.high),
+      low: Number(c.low),
+      close: Number(c.close),
+      volume: Number(c.volume) || 0,
+    })
+  }
+  return bars.sort((a, b) => a.timestamp - b.timestamp)
+}
+
+function getDayDetail(symbol, dateStr, opts = {}) {
+  let intraday
+  let daily
+  let dataSource = 'demo'
+
+  if (opts.mt5Candles && Array.isArray(opts.mt5Candles) && opts.mt5Candles.length > 0) {
+    intraday = mapMT5CandlesToBars(opts.mt5Candles, dateStr)
+    dataSource = 'mt5'
+    if (intraday.length > 0) {
+      const o = intraday[0].open
+      const c = intraday[intraday.length - 1].close
+      const h = Math.max(...intraday.map((b) => b.high))
+      const l = Math.min(...intraday.map((b) => b.low))
+      const vol = intraday.reduce((s, b) => s + b.volume, 0)
+      daily = {
+        open: o,
+        high: h,
+        low: l,
+        close: c,
+        volume: vol,
+        trend: c > o ? 'up' : c < o ? 'down' : 'sideways',
+        patterns: [],
+      }
+    }
+  }
+
+  if (!intraday) {
+    const dailyAnalysis = getDailyAnalysis(symbol, dateStr)
+    daily = dailyAnalysis.market ? { ...dailyAnalysis.market, patterns: dailyAnalysis.patterns } : null
+    intraday = getIntradayBarsForDate(symbol, dateStr, '1H')
+    dataSource = dailyAnalysis.dataSource
+  }
+  if (!daily && intraday.length > 0) {
+    const o = intraday[0].open
+    const c = intraday[intraday.length - 1].close
+    daily = {
+      open: o,
+      high: Math.max(...intraday.map((b) => b.high)),
+      low: Math.min(...intraday.map((b) => b.low)),
+      close: c,
+      volume: intraday.reduce((s, b) => s + b.volume, 0),
+      trend: c > o ? 'up' : c < o ? 'down' : 'sideways',
+      patterns: [],
+    }
+  }
+
   const suggestedEntries = detectIntradayEntries(intraday)
   return {
     date: dateStr,
     symbol,
-    daily: daily.market ? { ...daily.market, patterns: daily.patterns } : null,
+    daily,
     intraday,
     suggestedEntries,
-    dataSource: daily.dataSource,
+    dataSource,
   }
 }
 

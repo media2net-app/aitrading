@@ -140,6 +140,11 @@ function getIntradayBarsForDate(symbol, dateStr, timeframe = '1H') {
     })
   }
 
+  // Vandaag: alleen bars tot nu (geen toekomstige tijd)
+  if (dateStr === getTodayStr()) {
+    const now = Date.now()
+    return bars.filter((b) => b.timestamp <= now)
+  }
   return bars
 }
 

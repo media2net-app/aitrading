@@ -26,6 +26,9 @@ export default function DashboardHeader() {
         <NavLink to="/dashboard/analyse" className={navLinkClass}>
           Analyse
         </NavLink>
+        <NavLink to="/dashboard/trade-bot" className={navLinkClass}>
+          Trade bot
+        </NavLink>
       </nav>
       <div className="hidden text-sm text-gray-400 sm:block" />
       <div className="flex items-center gap-4">

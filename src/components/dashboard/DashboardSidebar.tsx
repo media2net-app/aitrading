@@ -4,6 +4,7 @@ const navItems = [
   { to: '/dashboard', label: 'Dashboard', end: true },
   { to: '/dashboard/patronen', label: 'Patronen', end: false },
   { to: '/dashboard/analyse', label: 'Analyse', end: false },
+  { to: '/dashboard/trade-bot', label: 'Trade bot', end: false },
 ]
 
 export default function DashboardSidebar() {

@@ -72,13 +72,21 @@ function trendLabel(trend: string) {
   return 'Zijwaarts'
 }
 
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
 export default function AnalysePage() {
-  const [date, setDate] = useState('2026-02-06')
+  const [date, setDate] = useState(todayStr)
   const [result, setResult] = useState<DailyResult | null>(null)
   const [dayDetail, setDayDetail] = useState<DayDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mt5Status, setMt5Status] = useState<MT5Status | null>(null)
+
+  useEffect(() => {
+    setDate(todayStr())
+  }, [])
 
   useEffect(() => {
     let cancelled = false

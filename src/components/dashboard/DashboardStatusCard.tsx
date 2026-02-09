@@ -37,7 +37,7 @@ export default function DashboardStatusCard() {
   const [mt5Loading, setMt5Loading] = useState(true)
   const [mt5Error, setMt5Error] = useState<string | null>(null)
 
-  useEffect(() => {
+  const fetchMt5Status = () => {
     setMt5Loading(true)
     setMt5Error(null)
     fetch('/api/mt5/status')
@@ -54,6 +54,12 @@ export default function DashboardStatusCard() {
         setMt5Error('Backend niet bereikbaar? Start de server (node server.js) en controleer .env (MT5_ACCOUNT, MT5_SERVER, etc.) of EA status.json.')
       })
       .finally(() => setMt5Loading(false))
+  }
+
+  useEffect(() => {
+    fetchMt5Status()
+    const interval = setInterval(fetchMt5Status, 30000)
+    return () => clearInterval(interval)
   }, [])
   useEffect(() => {
     fetch('/api/app-info')
