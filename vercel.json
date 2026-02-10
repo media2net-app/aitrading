@@ -8,7 +8,7 @@
   ],
   "functions": {
     "api/[[...path]].js": {
-      "excludeFiles": "{public/downloads/**,agent/**,electron/**}"
+      "excludeFiles": "{public/**,agent/**,electron/**}"
     }
   }
 }
