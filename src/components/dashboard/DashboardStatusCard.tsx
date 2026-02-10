@@ -40,7 +40,17 @@ export default function DashboardStatusCard() {
   const fetchMt5Status = () => {
     setMt5Loading(true)
     setMt5Error(null)
-    fetch('/api/mt5/status')
+    const headers: HeadersInit = {}
+    try {
+      const stored = localStorage.getItem('aitrading_auth')
+      if (stored) {
+        const data = JSON.parse(stored)
+        if (data?.token) headers.Authorization = `Bearer ${data.token}`
+      }
+    } catch {
+      // negeer
+    }
+    fetch('/api/mt5/status', { headers })
       .then((r) => {
         if (!r.ok) throw new Error(`Status ${r.status}`)
         return r.json()

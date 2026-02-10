@@ -80,6 +80,34 @@ export default function TradeBotPage() {
     return new Date().toISOString().slice(0, 10)
   }
 
+  async function pollOrderStatus(
+    orderId: string,
+    timeoutMs: number
+  ): Promise<{ status: 'completed'; success: boolean; message?: string } | null> {
+    const deadline = Date.now() + timeoutMs
+    const pollMs = 1500
+    while (Date.now() < deadline) {
+      try {
+        const res = await fetchWithAuth(`/api/mt5/agent/order-status/${orderId}`)
+        const json = (await res.json()) as {
+          success?: boolean
+          data?: { status: string; success?: boolean; message?: string }
+        }
+        if (json.success && json.data?.status === 'completed') {
+          return {
+            status: 'completed',
+            success: json.data.success === true,
+            message: json.data.message,
+          }
+        }
+      } catch {
+        // negeer en probeer opnieuw
+      }
+      await new Promise((r) => setTimeout(r, pollMs))
+    }
+    return null
+  }
+
   async function handleActiveren() {
     setMessage(null)
     setStep('Analyseren van vandaag…')
@@ -147,7 +175,7 @@ export default function TradeBotPage() {
       const tp3Val = isBuy ? entryPrice + tp3 : entryPrice - tp3
       const slPrice = isBuy ? entryPrice - slVal : entryPrice + slVal
 
-      const orderRes = await fetch('/api/mt5/order', {
+      const orderRes = await fetchWithAuth('/api/mt5/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -164,12 +192,29 @@ export default function TradeBotPage() {
 
       const orderJson = (await orderRes.json()) as {
         success?: boolean
-        data?: { message?: string }
+        data?: { orderId?: string; queued?: boolean; message?: string }
         error?: string
       }
 
       setStep(null)
-      if (orderJson.success) {
+      if (orderJson.success && orderJson.data?.queued && orderJson.data?.orderId) {
+        setStep('Order in wachtrij; wachten op agent…')
+        const final = await pollOrderStatus(orderJson.data.orderId, 30000)
+        setStep(null)
+        if (final?.status === 'completed') {
+          setMessage({
+            type: final.success ? 'success' : 'error',
+            text: final.success
+              ? `Trade geplaatst: ${best.direction} @ ${entryPrice.toFixed(2)} (${best.pattern}). ${final.message || ''}`
+              : final.message || 'Order mislukt.',
+          })
+        } else {
+          setMessage({
+            type: 'info',
+            text: `Order in wachtrij. Start de local agent om te koppelen met MT5. (orderId: ${orderJson.data.orderId})`,
+          })
+        }
+      } else if (orderJson.success) {
         setMessage({
           type: 'success',
           text: `Trade geplaatst: ${best.direction} @ ${entryPrice.toFixed(2)} (${best.pattern}, ${(best.confidence * 100).toFixed(0)}% confidence). SL: ${slPrice.toFixed(2)}, TP1/2/3: ${tp1Val.toFixed(2)} / ${tp2Val.toFixed(2)} / ${tp3Val.toFixed(2)}.`,
@@ -220,7 +265,7 @@ export default function TradeBotPage() {
       const tp2Val = entryPrice + tp2
       const tp3Val = entryPrice + tp3
 
-      const orderRes = await fetch('/api/mt5/order', {
+      const orderRes = await fetchWithAuth('/api/mt5/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -236,10 +281,27 @@ export default function TradeBotPage() {
       })
       const orderJson = (await orderRes.json()) as {
         success?: boolean
-        data?: { message?: string }
+        data?: { orderId?: string; queued?: boolean; message?: string }
         error?: string
       }
-      if (orderJson.success) {
+      if (orderJson.success && orderJson.data?.queued && orderJson.data?.orderId) {
+        setStep('Order in wachtrij; wachten op agent…')
+        const final = await pollOrderStatus(orderJson.data.orderId, 30000)
+        setStep(null)
+        if (final?.status === 'completed') {
+          setMessage({
+            type: final.success ? 'success' : 'error',
+            text: final.success
+              ? `Test trade BUY geplaatst @ ${entryPrice.toFixed(2)}. ${final.message || ''}`
+              : final.message || 'Order mislukt.',
+          })
+        } else {
+          setMessage({
+            type: 'info',
+            text: `Order in wachtrij. Start de local agent om te koppelen met MT5. (orderId: ${orderJson.data.orderId})`,
+          })
+        }
+      } else if (orderJson.success) {
         setMessage({
           type: 'success',
           text: `Test trade BUY geplaatst @ ${entryPrice.toFixed(2)}. SL: ${slPrice.toFixed(2)}, TP1/2/3: ${tp1Val.toFixed(2)} / ${tp2Val.toFixed(2)} / ${tp3Val.toFixed(2)}. Controleer in MT5 of de order binnenkomt.`,

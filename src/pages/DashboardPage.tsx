@@ -1,9 +1,28 @@
+import { useAuth } from '../contexts/AuthContext'
 import DashboardKpiCards from '../components/dashboard/DashboardKpiCards'
 import DashboardChart from '../components/dashboard/DashboardChart'
 import DashboardTradeTable from '../components/dashboard/DashboardTradeTable'
 import DashboardStatusCard from '../components/dashboard/DashboardStatusCard'
+import OnboardingMT5Form from '../components/dashboard/OnboardingMT5Form'
 
 export default function DashboardPage() {
+  const { user } = useAuth()
+  const isOnboarding = user?.status === 'onboarding'
+
+  if (isOnboarding) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Onboarding</h1>
+          <p className="mt-1 text-gray-400">
+            Vul je MT5-gegevens in. Het dashboard blijft leeg tot je account actief is.
+          </p>
+        </div>
+        <OnboardingMT5Form />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       <div>

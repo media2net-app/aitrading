@@ -17,6 +17,9 @@ export default function DashboardHeader() {
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-dark-600 bg-dark-800 px-4 sm:px-6">
       <nav className="flex gap-4 sm:hidden">
+        <NavLink to="/dashboard/downloads" className={navLinkClass}>
+          Downloads
+        </NavLink>
         <NavLink to="/dashboard" end className={navLinkClass}>
           Dashboard
         </NavLink>

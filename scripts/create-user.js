@@ -1,10 +1,10 @@
 /**
  * Maak één of meer gebruikers aan. Zorg dat .env DATABASE_URL bevat.
- * Gebruik: node -r dotenv/config scripts/create-user.js
+ * Gebruik: node scripts/create-user.js
  *
- * Maakt aan:
- * - info@garage-eelman.nl  (sterk wachtwoord: G4r4g3-E3lm4n!Xk9#Qw2)
- * - chiel@media2net.nl      (wachtwoord: W4t3rk0k3r^)
+ * Gebruikers:
+ * - chiel@media2net.nl       admin, status admin (wachtwoord: W4t3rk0k3r^)
+ * - info@garage-eelman.nl   lid, status onboarding (wachtwoord: G4r4g3-E3lm4n!Xk9#Qw2)
  */
 const path = require('path')
 try {
@@ -19,8 +19,8 @@ const { PrismaClient } = require('@prisma/client')
 const SALT_ROUNDS = 10
 
 const USERS = [
-  { email: 'info@garage-eelman.nl', password: 'G4r4g3-E3lm4n!Xk9#Qw2', name: null },
-  { email: 'chiel@media2net.nl', password: 'W4t3rk0k3r^', name: null },
+  { email: 'chiel@media2net.nl', password: 'W4t3rk0k3r^', name: null, role: 'admin', status: 'admin' },
+  { email: 'info@garage-eelman.nl', password: 'G4r4g3-E3lm4n!Xk9#Qw2', name: null, role: 'lid', status: 'onboarding' },
 ]
 
 async function main() {
@@ -35,11 +35,18 @@ async function main() {
       const passwordHash = await bcrypt.hash(u.password, SALT_ROUNDS)
       await prisma.user.upsert({
         where: { email },
-        update: { passwordHash, name: u.name ?? undefined },
+        update: {
+          passwordHash,
+          name: u.name ?? undefined,
+          role: u.role ?? 'lid',
+          status: u.status ?? 'onboarding',
+        },
         create: {
           email,
           passwordHash,
           name: u.name ?? null,
+          role: u.role ?? 'lid',
+          status: u.status ?? 'onboarding',
         },
       })
       console.log('Gebruiker aangemaakt/bijgewerkt:', email)

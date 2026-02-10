@@ -12,6 +12,14 @@ model User {
   email        String     @unique
   passwordHash String     @map("password_hash")
   name         String?
+  role         String     @default("lid")   // admin | lid
+  status       String     @default("onboarding") // admin | onboarding | active
+  mt5Account   Int?       @map("mt5_account")
+  mt5Server    String?    @map("mt5_server")
+  mt5Company   String?    @map("mt5_company")
+  mt5Mode      String?    @map("mt5_mode")
+  mt5BotPath   String?    @map("mt5_bot_path")
+  agentTokenHash String?  @map("agent_token_hash")
   createdAt    DateTime   @default(now()) @map("created_at")
   analyses     Analysis[]
 }

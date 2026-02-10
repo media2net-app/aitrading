@@ -6,6 +6,7 @@ const mt5 = require('./api/mt5Bridge')
 const { getBarsInRange } = require('./api/marketData')
 const { getDailyAnalysis, getDayDetail } = require('./api/analyseService')
 const auth = require('./api/auth')
+const agentHandlers = require('./api/agentHandlers')
 const { getPrisma, hasDatabase } = require('./api/db')
 
 let emailService = null
@@ -24,19 +25,127 @@ app.use(cors())
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'dist')))
 
-// MT5 API (file-based bridge)
-app.get('/api/mt5/status', mt5.getStatus)
+// MT5 API (file-based bridge; status kan van agent komen als user is ingelogd)
+app.get('/api/mt5/status', (req, res) => {
+  const userId = agentHandlers.getUserIdFromReq(req)
+  if (userId) {
+    const agentStatus = agentHandlers.getStatusForUser(userId)
+    if (agentStatus) return res.json(agentStatus)
+  }
+  mt5.getStatus(req, res)
+})
 app.get('/api/mt5/path', mt5.getPath)
 app.get('/api/mt5/log', mt5.getBridgeLog)
 app.get('/api/mt5/equity-history', mt5.getEquityHistory)
 app.get('/api/mt5/price', mt5.getPrice)
 app.get('/api/mt5/positions', mt5.getPositions)
-app.post('/api/mt5/order', mt5.postOrder)
+// Order: met auth → queue voor agent; zonder auth → file-based (lokaal)
+app.post('/api/mt5/order', async (req, res) => {
+  const userId = agentHandlers.getUserIdFromReq(req)
+  if (userId) {
+    try {
+      const { type, volume, entryPrice, stopLoss, symbol, riskAmount, tp1, tp2, tp3 } = req.body || {}
+      if (!type || volume == null || entryPrice == null || stopLoss == null) {
+        return res.status(400).json({ success: false, error: 'Ontbrekende parameters (type, volume, entryPrice, stopLoss)' })
+      }
+      const result = agentHandlers.queueOrderForUser(userId, {
+        type,
+        symbol: symbol || 'XAUUSD',
+        volume,
+        entryPrice,
+        stopLoss,
+        riskAmount,
+        tp1,
+        tp2,
+        tp3,
+      })
+      return res.json({
+        success: true,
+        data: { orderId: result.orderId, message: 'Order in wachtrij voor agent', queued: true },
+      })
+    } catch (err) {
+      return res.status(500).json({ success: false, error: err.message })
+    }
+  }
+  mt5.postOrder(req, res)
+})
+
+// Agent API (local agent ↔ live API)
+app.post('/api/mt5/agent/status', agentHandlers.postAgentStatus)
+app.get('/api/mt5/agent/commands', agentHandlers.getAgentCommands)
+app.post('/api/mt5/agent/response', agentHandlers.postAgentResponse)
+app.get('/api/mt5/agent/order-status/:orderId', agentHandlers.getAgentOrderStatus)
 
 // Auth API (DB + JWT)
 app.post('/api/auth/register', auth.register)
 app.post('/api/auth/login', auth.login)
 app.get('/api/auth/me', auth.me)
+
+// User MT5 settings (onboarding: bewaar per gebruiker)
+app.get('/api/user/mt5-settings', auth.requireAuth, async (req, res) => {
+  try {
+    const prisma = getPrisma()
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { mt5Account: true, mt5Server: true, mt5Company: true, mt5Mode: true, mt5BotPath: true },
+    })
+    if (!user) return res.status(404).json({ success: false, error: 'Gebruiker niet gevonden' })
+    res.json({
+      success: true,
+      data: {
+        mt5Account: user.mt5Account ?? '',
+        mt5Server: user.mt5Server ?? '',
+        mt5Company: user.mt5Company ?? '',
+        mt5Mode: user.mt5Mode ?? '',
+        mt5BotPath: user.mt5BotPath ?? '',
+      },
+    })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+app.put('/api/user/mt5-settings', auth.requireAuth, async (req, res) => {
+  try {
+    const { mt5Account, mt5Server, mt5Company, mt5Mode, mt5BotPath } = req.body || {}
+    const prisma = getPrisma()
+    const accountNum = mt5Account !== undefined && mt5Account !== '' && mt5Account !== null
+      ? parseInt(String(mt5Account), 10)
+      : null
+    if (accountNum !== null && Number.isNaN(accountNum)) {
+      return res.status(400).json({ success: false, error: 'Rekeningnummer moet een getal zijn' })
+    }
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: {
+        mt5Account: accountNum,
+        mt5Server: mt5Server != null ? String(mt5Server).trim() || null : undefined,
+        mt5Company: mt5Company != null ? String(mt5Company).trim() || null : undefined,
+        mt5Mode: mt5Mode != null ? String(mt5Mode).trim() || null : undefined,
+        mt5BotPath: mt5BotPath != null ? String(mt5BotPath).trim() || null : undefined,
+      },
+    })
+    res.json({ success: true, message: 'MT5-gegevens opgeslagen' })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+// Agent-token: genereer langlevend token voor de local agent (eenmalig zichtbaar)
+const crypto = require('crypto')
+app.post('/api/user/agent-token', auth.requireAuth, async (req, res) => {
+  try {
+    const token = crypto.randomBytes(32).toString('hex')
+    const hash = crypto.createHash('sha256').update(token).digest('hex')
+    const prisma = getPrisma()
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { agentTokenHash: hash },
+    })
+    res.json({ success: true, data: { token } })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
 
 // Analyse API (live MT5 candles wanneer EA reageert, anders demo; vandaag nooit toekomstige uren)
 app.get('/api/analyse/day-detail', async (req, res) => {
@@ -199,10 +308,16 @@ app.get('/api/app-info', (req, res) => {
 })
 
 // Serve React app for all other routes (Express 5: geen * meer, gebruik regex)
+// Op Vercel serverless wordt alleen /api/* aangeroepen; deze route niet
 app.get(/\/(?!api\/).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+// Op Vercel: geen listen, app wordt geëxporteerd en aangeroepen via api/[[...path]].js
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+  })
+}
+
+module.exports = app

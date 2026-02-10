@@ -49,12 +49,12 @@ async function register(req, res) {
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS)
     const user = await prisma.user.create({
       data: { email: trimmed, passwordHash, name: name || null },
-      select: { id: true, email: true, name: true },
+      select: { id: true, email: true, name: true, role: true, status: true },
     })
     const token = createToken(user.id, user.email)
     res.json({
       success: true,
-      data: { token, user: { id: user.id, email: user.email, name: user.name } },
+      data: { token, user: { id: user.id, email: user.email, name: user.name, role: user.role, status: user.status } },
     })
   } catch (err) {
     console.error('Register error:', err)
@@ -86,7 +86,7 @@ async function login(req, res) {
       success: true,
       data: {
         token,
-        user: { id: user.id, email: user.email, name: user.name },
+        user: { id: user.id, email: user.email, name: user.name, role: user.role, status: user.status },
       },
     })
   } catch (err) {
@@ -111,7 +111,7 @@ async function me(req, res) {
     const prisma = getPrisma()
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { id: true, email: true, name: true },
+      select: { id: true, email: true, name: true, role: true, status: true },
     })
     if (!user) {
       return res.status(401).json({ success: false, error: 'Gebruiker niet gevonden' })

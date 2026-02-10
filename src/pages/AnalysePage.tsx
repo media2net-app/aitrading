@@ -128,7 +128,17 @@ export default function AnalysePage() {
   }, [date])
 
   useEffect(() => {
-    fetch('/api/mt5/status')
+    const headers: HeadersInit = {}
+    try {
+      const stored = localStorage.getItem('aitrading_auth')
+      if (stored) {
+        const data = JSON.parse(stored)
+        if (data?.token) headers.Authorization = `Bearer ${data.token}`
+      }
+    } catch {
+      // negeer
+    }
+    fetch('/api/mt5/status', { headers })
       .then((res) => res.json())
       .then((json) => setMt5Status(json))
       .catch(() => setMt5Status({ success: false, connected: false }))

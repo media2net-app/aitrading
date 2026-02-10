@@ -13,6 +13,9 @@ function getGoldSymbol() {
 }
 
 function getMT5Path() {
+  if (process.env.VERCEL === '1') {
+    return path.join(os.tmpdir(), 'MT5_AI_Bot')
+  }
   if (process.env.MT5_BOT_PATH) {
     return process.env.MT5_BOT_PATH
   }
@@ -244,8 +247,12 @@ class MT5Bridge {
   }
 
   ensureDirectory() {
-    if (!fs.existsSync(this.mt5Path)) {
-      fs.mkdirSync(this.mt5Path, { recursive: true })
+    try {
+      if (!fs.existsSync(this.mt5Path)) {
+        fs.mkdirSync(this.mt5Path, { recursive: true })
+      }
+    } catch {
+      // Op Vercel/serverless: negeren als map niet aan te maken is
     }
   }
 

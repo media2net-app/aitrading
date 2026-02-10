@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:agent": "cd agent && npm install && npx pkg . --output ../public/downloads/AITradingAgent",
+    "build:agent-electron": "cd electron && npm install && npm run build",
+    "postinstall": "prisma generate",
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "node server.js",

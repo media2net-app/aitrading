@@ -17,7 +17,18 @@ export default function DashboardChart() {
   }, [])
 
   useEffect(() => {
-    fetch('/api/mt5/status')
+    fetch('/api/mt5/status', {
+      headers: (() => {
+        const h: Record<string, string> = {}
+        try {
+          const d = JSON.parse(localStorage.getItem('aitrading_auth') || '{}')
+          if (d?.token) h.Authorization = `Bearer ${d.token}`
+        } catch {
+          // negeer
+        }
+        return h
+      })(),
+    })
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.data) {

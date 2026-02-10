@@ -6,6 +6,8 @@ export type AuthUser = {
   id: string
   email: string
   name: string | null
+  role?: string   // admin | lid
+  status?: string // admin | onboarding | active
 }
 
 type AuthContextType = {

@@ -5,40 +5,68 @@ import { CalculatorContent } from './CalculatorPage'
 
 const features = [
   {
-    title: 'XAU/USD (goud)',
-    description: 'De bot is gebouwd voor goud: het paar dat nu volop beweegt. Geen keuzestress—één focus voor maximale resultaten.',
-    icon: '▸',
+    title: 'Volledig automatische trading bot',
+    description:
+      'De AI bot analyseert goud (XAU/USD) 24/5 en plaatst trades automatisch volgens een vaste strategie. Geen emotie, geen handmatig klikken.',
+    icon: '⚙︎',
   },
   {
-    title: '5m & 15m timeframes',
-    description: 'Handel op korte intervallen (5 en 15 minuten) voor snelle, hoge winsten met onze bewezen strategie.',
-    icon: '◈',
+    title: 'MetaTrader 5 + eigen broker',
+    description:
+      'De software draait op jouw eigen MT5-account bij een broker naar keuze. Je behoudt 100% controle over je rekening en kunt altijd ingrijpen.',
+    icon: 'MT5',
   },
   {
-    title: '94% gemiddelde winst',
-    description: 'Onze AI volgt een vaste strategie en behaalt gemiddeld 94% winst. Geen gokwerk—gedisciplineerde uitvoering.',
-    icon: '◉',
+    title: 'Lokale agent + webdashboard',
+    description:
+      'Een lokale agent koppelt MT5 op je pc aan ons webdashboard. Zo zie je overal je resultaten terug, en kun je vanaf de website trades starten.',
+    icon: '☁︎',
   },
   {
-    title: 'Risicobeheer',
-    description: 'Stop-loss, take-profit en positiegrootte zijn ingebouwd. De bot handelt 24/5 binnen duidelijke regels—de forex- en aandelenmarkten zijn in het weekend gesloten.',
-    icon: '◇',
+    title: 'Wekelijkse 1-op-1 coaching',
+    description:
+      'Geen “zet aan en vergeet”-verhaal: we bouwen samen aan een plan. Wekelijks een 1-op-1 call om resultaten, risico en strategie te finetunen.',
+    icon: '✦',
   },
 ]
 
 const steps = [
-  { step: 1, title: 'Trading account bij broker', text: 'We helpen je met het opzetten van je trading account bij onze aangesloten brokerpartner—van registratie tot verificatie.' },
-  { step: 2, title: 'Software op je pc', text: 'We installeren op je pc: MetaTrader 5 voor het handelen, MQ5-implementatie, EA en onze zelf ontwikkelde AI Trade bot.' },
-  { step: 3, title: 'MetaTrader 5 op mobiel', text: 'We helpen je MetaTrader 5 op je mobiel te configureren, zodat je altijd live mee kunt kijken hoe je ervoor staat.' },
-  { step: 4, title: 'Demo-week (7 dagen)', text: 'Elk nieuw account draait 7 dagen test. We stemmen de bot af op jouw account; bij gemiddeld 90%+ winst over 7 dagen gaat je account live met de AI Bot.' },
-  { step: 5, title: 'Strategie afspreken', text: 'We spreken een duidelijke strategie met je af zodat je stap voor stap groeit. Start je met €500? Dan adviseren we max. 2% verlies per trade en focus op €100 winst per dag om te beginnen.' },
-  { step: 6, title: 'Wekelijkse 1-op-1 coaching', text: 'Elke week op een vast moment een videocall van 30 min om de voortgang en strategie te bespreken.' },
+  {
+    step: 1,
+    title: 'Trading account bij broker',
+    text: 'We helpen je met het opzetten van je trading account bij onze (of jouw) broker—van registratie tot verificatie.',
+  },
+  {
+    step: 2,
+    title: 'Software & koppeling op je pc',
+    text: 'We installeren MetaTrader 5, de EA (Expert Advisor) en de AI Trading bot op je pc en richten de MT5_AI_Bot‑bridge in.',
+  },
+  {
+    step: 3,
+    title: 'Dashboard & mobiele app',
+    text: 'Je krijgt toegang tot het online dashboard en we helpen je MT5 op mobiel te configureren, zodat je altijd live mee kunt kijken.',
+  },
+  {
+    step: 4,
+    title: 'Demo‑week (7 dagen)',
+    text: 'Elk nieuw account draait eerst 7 dagen demo. We stemmen de bot af op jouw account; pas als alles klopt ga je live.',
+  },
+  {
+    step: 5,
+    title: 'Strategie & risicoprofiel',
+    text: 'We spreken samen een strategie af. Start je met €500? Dan adviseren we max. 2% risico per trade en realistische dagdoelen.',
+  },
+  {
+    step: 6,
+    title: 'Doorlopend traject + coaching',
+    text: 'We volgen je resultaten wekelijks, sturen bij waar nodig en zorgen dat je gefocust blijft op je eigen groeiplan.',
+  },
 ]
 
 const stats = [
-  { value: '94%', label: 'Gem. winst' },
-  { value: 'XAU/USD', label: 'Goud (5m & 15m)' },
-  { value: '99.9%', label: 'Uptime' },
+  { value: 'Feb 2026', label: 'Launch maand AI Trading.software' },
+  { value: '€750', label: 'Eenmalige investering (incl. btw)' },
+  { value: '€500', label: 'Min. startkapitaal op je eigen account' },
 ]
 
 export default function HomePage() {
@@ -77,7 +105,9 @@ export default function HomePage() {
             </h2>
             <p className="mt-4 text-gray-400">
               Een AI bot die specifiek is gebouwd voor <strong className="text-gray-300">goud (XAU/USD)</strong> in Forex.
-              Goud beweegt momenteel sterk; door slim in te spelen op korte timeframes van <strong className="text-gray-300">5 en 15 minuten</strong> met onze vaste strategie pakt de bot hoge winsten. Gemiddeld behaalt de bot <strong className="text-accent">94% winst</strong>. Nieuw met Forex? De bot handelt voor je—je hoeft geen ervaring te hebben.
+              De bot draait op korte timeframes van <strong className="text-gray-300">5 en 15 minuten</strong> en handelt volledig
+              automatisch op jouw eigen MT5‑rekening. Jij kiest je broker, behoudt volledige controle en wij koppelen alles aan een
+              online dashboard en wekelijkse coaching.
             </p>
           </div>
           <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2">
@@ -99,6 +129,66 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Track record */}
+      <section id="resultaten" className="border-b border-dark-600 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">Resultaten (track record)</h2>
+            <p className="mt-4 text-gray-400">
+              De AI Trading.software bot gaat live in <strong className="text-gray-300">februari 2026</strong>. Vanaf die maand
+              bouwen we een transparant track record op. Elke maand werken we deze tabel bij met de daadwerkelijke resultaten
+              van de live accounts die met de bot draaien.
+            </p>
+          </div>
+
+          <div className="mx-auto mt-10 max-w-5xl overflow-x-auto rounded-xl border border-dark-600 bg-dark-800/60 p-4">
+            <table className="min-w-full text-sm text-gray-300">
+              <thead>
+                <tr className="border-b border-dark-600 text-xs uppercase tracking-wide text-gray-500">
+                  <th className="px-3 py-2 text-left">Jaar</th>
+                  <th className="px-3 py-2">Feb</th>
+                  <th className="px-3 py-2">Mrt</th>
+                  <th className="px-3 py-2">Apr</th>
+                  <th className="px-3 py-2">Mei</th>
+                  <th className="px-3 py-2">Jun</th>
+                  <th className="px-3 py-2">Jul</th>
+                  <th className="px-3 py-2">Aug</th>
+                  <th className="px-3 py-2">Sep</th>
+                  <th className="px-3 py-2">Okt</th>
+                  <th className="px-3 py-2">Nov</th>
+                  <th className="px-3 py-2">Dec</th>
+                  <th className="px-3 py-2">Jaar</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-dark-700/70">
+                  <td className="px-3 py-2 text-left font-semibold text-white">2026</td>
+                  <td className="px-3 py-2 text-amber-300">komt na 1e maand</td>
+                  <td className="px-3 py-2 text-gray-500">—</td>
+                  <td className="px-3 py-2 text-gray-500">—</td>
+                  <td className="px-3 py-2 text-gray-500">—</td>
+                  <td className="px-3 py-2 text-gray-500">—</td>
+                  <td className="px-3 py-2 text-gray-500">—</td>
+                  <td className="px-3 py-2 text-gray-500">—</td>
+                  <td className="px-3 py-2 text-gray-500">—</td>
+                  <td className="px-3 py-2 text-gray-500">—</td>
+                  <td className="px-3 py-2 text-gray-500">—</td>
+                  <td className="px-3 py-2 text-gray-500">—</td>
+                  <td className="px-3 py-2 font-semibold text-gray-500">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="mx-auto mt-4 max-w-3xl text-center text-xs text-gray-500">
+            <strong>Start track record:</strong> februari 2026 (launch van de software). Resultaten worden maandelijks bijgewerkt.
+          </p>
+          <p className="mx-auto mt-1 max-w-3xl text-center text-xs text-gray-500">
+            Handelen in forex en CFD&apos;s brengt risico&apos;s met zich mee. In het verleden behaalde resultaten bieden geen garantie
+            voor de toekomst. Investeer alleen geld dat je kunt missen.
+          </p>
+        </div>
+      </section>
+
       {/* Calculator & Simulator – uitleg trading */}
       <section id="calculator" className="border-b border-dark-600 py-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
@@ -115,6 +205,56 @@ export default function HomePage() {
           </div>
           <div className="mt-10">
             <CalculatorContent showTradingUitleg={false} />
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="prijzen" className="border-b border-dark-600 py-20">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">Prijzen & traject</h2>
+            <p className="mt-4 text-gray-400">
+              We hanteren een eenvoudig model: <strong className="text-gray-300">eenmalig</strong> betalen voor installatie,
+              configuratie en coaching. De bot draait daarna op jouw eigen rekening—zonder abonnement.
+            </p>
+          </div>
+
+          <div className="mx-auto mt-10 max-w-3xl">
+            <div className="rounded-2xl border border-accent/40 bg-accent/5 p-8 shadow-xl shadow-black/30">
+              <p className="text-sm font-medium uppercase tracking-wide text-accent">AI Trading.software traject</p>
+              <h3 className="mt-2 text-2xl font-bold text-white">Maatwerk AI Trading bot + installatie</h3>
+
+              <div className="mt-4 flex flex-wrap items-baseline gap-2">
+                <span className="text-4xl font-bold text-white">€750</span>
+                <span className="text-sm text-gray-400">eenmalig, incl. btw</span>
+              </div>
+              <p className="mt-1 text-sm text-gray-400">
+                + minimaal <strong className="text-gray-200">€500 startkapitaal</strong> op je eigen trading account bij een broker
+                naar keuze.
+              </p>
+
+              <ul className="mt-6 space-y-2 text-sm text-gray-200">
+                <li>• Installatie van MetaTrader 5, EA en AI Trading bot op jouw pc (remote onboarding).</li>
+                <li>• Inrichting van de MT5_AI_Bot‑bridge en koppeling met het webdashboard.</li>
+                <li>• 7‑daagse demo‑week om alles veilig te testen voordat je live gaat.</li>
+                <li>• Wekelijkse 1‑op‑1 coaching (30 min) voor strategie, risico en mindset.</li>
+                <li>• Toegang tot het online dashboard met live MT5‑status en orderkoppeling.</li>
+              </ul>
+
+              <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Link
+                  to="/signup"
+                  className="inline-flex rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-dark-900 shadow-lg transition hover:bg-accent-hover"
+                >
+                  <span className="font-bold">Ja</span>, ik wil mij aanmelden
+                </Link>
+                <p className="text-xs text-gray-400">
+                  Je geld blijft altijd op je eigen brokerrekening. Wij hebben geen toegang tot je funds en geven geen financieel
+                  advies.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

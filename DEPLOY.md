@@ -10,14 +10,18 @@ vercel          # preview
 vercel --prod   # productie
 ```
 
-**SPA + API:** In dit project staan al:
-- `vercel.json` – build (Vite), output `dist`, en rewrites zodat `/signup` etc. naar `index.html` gaan; `/api/*` blijft naar de serverless functions.
-- `api/signup.js` – serverless signup-endpoint (e-mail via nodemailer).
+**SPA + API:** In dit project:
+- `vercel.json` – build (Vite), output `dist`, rewrites voor SPA en `/api/*` naar serverless.
+- **Volledige API op Vercel:** `api/[[...path]].js` is een catch-all die alle `/api/*`-requests doorgeeft aan de Express-app in `server.js` (auth, user, analyse, signup, health, app-info, mt5-stubs). Lokaal draait de API met `node server.js`; op Vercel wordt de app alleen als serverless aangeroepen (geen `listen`).
 
 **Environment variables (Vercel dashboard → Project → Settings → Environment Variables):**
 
-Zet voor het versturen van e-mails bij signup minimaal:
-- `SMTP_PASS` – wachtwoord van het SMTP-account (verplicht op Vercel)
+Verplicht voor **login/register/dashboard**:
+- `DATABASE_URL` – PostgreSQL-connectionstring (Prisma)
+- `JWT_SECRET` – geheim voor JWT-tokens (min. 32 tekens)
+
+Voor **e-mail (signup)**:
+- `SMTP_PASS` – wachtwoord van het SMTP-account
 
 Optioneel (als je andere waarden wilt dan de huidige Hostinger SMTP):
 - `SMTP_HOST` (default: smtp.hostinger.com)
@@ -29,14 +33,7 @@ Na het zetten van de env vars opnieuw deployen zodat de API ze gebruikt.
 
 **Overeenkomst:** De ondertekenpagina staat op `https://www.aitrading.software/agreement`. Geen token meer nodig.
 
----
-
-## Waarom het signup-formulier op live faalt
-
-Op **https://www.aitrading.software** staat alleen de **frontend** (statische build). Er draait **geen backend** op dat domein. Daardoor:
-
-- `POST /api/signup` geeft 404
-- Bezoekers zien: *"Er is een fout opgetreden bij het verzenden. Probeer het opnieuw."*
+Met `DATABASE_URL` en `JWT_SECRET` ingesteld op Vercel werken login, register, dashboard en de rest van de API op hetzelfde domein.
 
 ## Oplossing: API beschikbaar maken
 

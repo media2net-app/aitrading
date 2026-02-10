@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AITrading Agent – Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #0f0f14;
+      color: #e0e0e0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    h1 { font-size: 22px; margin: 0 0 8px; color: #fff; }
+    .sub { color: #888; font-size: 13px; margin-bottom: 24px; }
+    section {
+      background: #1a1a24;
+      border: 1px solid #2a2a36;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    section h2 { font-size: 16px; margin: 0 0 16px; color: #fff; }
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; margin-bottom: 4px; color: #aaa; font-size: 12px; }
+    .form-row input[type="text"],
+    .form-row input[type="password"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #333;
+      border-radius: 8px;
+      background: #0f0f14;
+      color: #fff;
+      font-size: 14px;
+    }
+    .form-row input:focus { outline: none; border-color: #3b82f6; }
+    .form-row .row { display: flex; gap: 8px; }
+    .form-row .row input { flex: 1; }
+    .btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-secondary { background: #2a2a36; color: #e0e0e0; }
+    .btn-secondary:hover { background: #333; }
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .status-card {
+      background: #0f0f14;
+      border: 1px solid #2a2a36;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .status-card .label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+    .status-card .value { font-size: 15px; font-weight: 500; color: #fff; }
+    .status-card .value.good { color: #4ade80; }
+    .status-card .value.warn { color: #fbbf24; }
+    .status-card .value.bad { color: #f87171; }
+    .hint { font-size: 12px; color: #666; margin-top: 8px; }
+    .error { color: #f87171; font-size: 13px; margin-top: 8px; }
+    .success { color: #4ade80; font-size: 13px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h1>AITrading Agent</h1>
+  <p class="sub">Koppel MetaTrader 5 op deze pc aan www.aitrading.software</p>
+
+  <section>
+    <h2>Configuratie</h2>
+    <p class="hint">Vul je gegevens in en klik op Opslaan. Het agent-token genereer je op de Downloads-pagina van de site (na inloggen).</p>
+    <div class="form-row">
+      <label>API-URL (platform)</label>
+      <input type="text" id="apiUrl" value="https://www.aitrading.software" placeholder="https://www.aitrading.software">
+    </div>
+    <div class="form-row">
+      <label>Agent-token</label>
+      <input type="password" id="agentToken" placeholder="Plak het token van de Downloads-pagina">
+      <span id="tokenHint" class="hint"></span>
+    </div>
+    <div class="form-row">
+      <label>MT5_AI_Bot-map</label>
+      <div class="row">
+        <input type="text" id="mt5Path" placeholder="Volledig pad naar de map MT5_AI_Bot">
+        <button type="button" class="btn btn-secondary" id="btnBrowse">Bladeren</button>
+      </div>
+      <p class="hint">In MT5: File → Open Data Folder → Terminal/Common/Files → maak daar de map <strong>MT5_AI_Bot</strong>. Het volledige pad vul je hier in.</p>
+    </div>
+    <div style="margin-top: 16px;">
+      <button type="button" class="btn btn-primary" id="btnSave">Opslaan en verbinden</button>
+      <span id="saveMessage"></span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Verbinding & MT5-gegevens</h2>
+    <p class="hint">Deze gegevens komen live uit MetaTrader 5 (status.json). Zorg dat: (1) het pad hierboven naar de map <strong>MT5_AI_Bot</strong> wijst (niet alleen je Bureaublad), (2) in MT5 de EA op een chart staat en (3) AutoTrading aanstaat.</p>
+    <div class="status-grid" id="statusGrid">
+      <div class="status-card">
+        <div class="label">Status</div>
+        <div class="value" id="valConnected">—</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Rekening (login)</div>
+        <div class="value" id="valLogin">—</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Server</div>
+        <div class="value" id="valServer">—</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Broker</div>
+        <div class="value" id="valCompany">—</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Modus</div>
+        <div class="value" id="valMode">—</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Symbool</div>
+        <div class="value" id="valSymbol">—</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Bid</div>
+        <div class="value" id="valBid">—</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Ask</div>
+        <div class="value" id="valAsk">—</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Spread</div>
+        <div class="value" id="valSpread">—</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Open posities</div>
+        <div class="value" id="valPositions">—</div>
+      </div>
+      <div class="status-card">
+        <div class="label">Laatste update</div>
+        <div class="value" id="valTimestamp">—</div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const apiUrlEl = document.getElementById('apiUrl')
+    const agentTokenEl = document.getElementById('agentToken')
+    const mt5PathEl = document.getElementById('mt5Path')
+    const tokenHintEl = document.getElementById('tokenHint')
+    const btnBrowse = document.getElementById('btnBrowse')
+    const btnSave = document.getElementById('btnSave')
+    const saveMessage = document.getElementById('saveMessage')
+
+    function setStatus(id, value, className = '') {
+      const el = document.getElementById(id)
+      if (!el) return
+      el.textContent = value == null || value === '' ? '—' : value
+      el.className = 'value' + (className ? ' ' + className : '')
+    }
+
+    function formatTime(ts) {
+      if (ts == null) return '—'
+      const d = new Date(ts * 1000)
+      return d.toLocaleTimeString('nl-NL') + ' ' + d.toLocaleDateString('nl-NL')
+    }
+
+    function renderStatus(data) {
+      if (!data) {
+        setStatus('valConnected', 'Geen data – controleer pad en EA', 'warn')
+        setStatus('valLogin', '—')
+        setStatus('valServer', '—')
+        setStatus('valCompany', '—')
+        setStatus('valMode', '—')
+        setStatus('valSymbol', '—')
+        setStatus('valBid', '—')
+        setStatus('valAsk', '—')
+        setStatus('valSpread', '—')
+        setStatus('valPositions', '—')
+        setStatus('valTimestamp', '—')
+        return
+      }
+      setStatus('valConnected', data.connected ? 'Verbonden' : 'Niet verbonden', data.connected ? 'good' : 'bad')
+      setStatus('valLogin', data.login != null ? String(data.login) : '—')
+      setStatus('valServer', data.server || '—')
+      setStatus('valCompany', data.company || '—')
+      setStatus('valMode', data.mode || '—')
+      setStatus('valSymbol', data.symbol || '—')
+      setStatus('valBid', data.bid != null ? Number(data.bid).toFixed(2) : '—')
+      setStatus('valAsk', data.ask != null ? Number(data.ask).toFixed(2) : '—')
+      setStatus('valSpread', data.spread != null ? Number(data.spread).toFixed(2) : '—')
+      const positions = Array.isArray(data.openPositions) ? data.openPositions.length : 0
+      setStatus('valPositions', String(positions))
+      setStatus('valTimestamp', formatTime(data.timestamp))
+    }
+
+    async function loadConfig() {
+      const c = await window.agentApi.getConfig()
+      apiUrlEl.value = c.apiUrl || 'https://www.aitrading.software'
+      mt5PathEl.value = c.mt5Path || ''
+      agentTokenEl.value = ''
+      tokenHintEl.textContent = c.tokenSet ? 'Token ingesteld (' + c.agentTokenMasked + '). Vul een nieuw token in om te vervangen.' : 'Nog geen token.'
+    }
+
+    btnBrowse.addEventListener('click', async () => {
+      const path = await window.agentApi.selectFolder()
+      if (path) mt5PathEl.value = path
+    })
+
+    btnSave.addEventListener('click', async () => {
+      saveMessage.textContent = ''
+      saveMessage.className = ''
+      try {
+        await window.agentApi.saveConfig({
+          apiUrl: apiUrlEl.value.trim(),
+          agentToken: agentTokenEl.value.trim(),
+          mt5Path: mt5PathEl.value.trim(),
+        })
+        saveMessage.textContent = 'Opgeslagen. Agent verbindt met het platform.'
+        saveMessage.className = 'success'
+        if (agentTokenEl.value) tokenHintEl.textContent = 'Token ingesteld. Je kunt dit veld leeg laten om het bestaande token te behouden.'
+        loadConfig()
+      } catch (e) {
+        saveMessage.textContent = 'Fout: ' + (e.message || e)
+        saveMessage.className = 'error'
+      }
+    })
+
+    window.agentApi.onStatusUpdate((data) => renderStatus(data))
+
+    loadConfig()
+  </script>
+</body>
+</html>
