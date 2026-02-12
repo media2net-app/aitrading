@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getAuthHeaders } from '../lib/api'
 
-type InvoiceItem = { filename: string; label: string }
+type InvoiceItem = { filename: string; label: string; url?: string }
 
 export default function FacturenPage() {
   const [invoices, setInvoices] = useState<InvoiceItem[]>([])
@@ -99,14 +99,26 @@ export default function FacturenPage() {
         <ul className="space-y-2">
           {invoices.map((inv) => (
             <li key={inv.filename}>
-              <button
-                type="button"
-                onClick={() => handleDownload(inv.filename)}
-                className="inline-flex items-center gap-2 rounded-lg border border-dark-600 bg-dark-800 px-4 py-3 text-left text-gray-200 hover:border-dark-500 hover:bg-dark-700 hover:text-white"
-              >
-                <span className="font-medium">{inv.label}</span>
-                <span className="text-gray-500">(PDF)</span>
-              </button>
+              {inv.url ? (
+                <a
+                  href={inv.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border border-dark-600 bg-dark-800 px-4 py-3 text-gray-200 hover:border-dark-500 hover:bg-dark-700 hover:text-white"
+                >
+                  <span className="font-medium">{inv.label}</span>
+                  <span className="text-gray-500">(PDF)</span>
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleDownload(inv.filename)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-dark-600 bg-dark-800 px-4 py-3 text-left text-gray-200 hover:border-dark-500 hover:bg-dark-700 hover:text-white"
+                >
+                  <span className="font-medium">{inv.label}</span>
+                  <span className="text-gray-500">(PDF)</span>
+                </button>
+              )}
             </li>
           ))}
         </ul>

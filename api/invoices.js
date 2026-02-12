@@ -2,35 +2,58 @@
  * Koppeling factuur-bestanden aan accounts (e-mail).
  * invoice-2026024.pdf → Globalservices (hortulanusglobalservices@gmail.com)
  * invoice-2026025.pdf → Weerbaarheid (info@responseweerbaarheid.nl)
+ *
+ * Ondersteunt zowel lokale bestanden (map invoices/) als Vercel Blob-URLs.
+ * - Voor productie vul je de env-vars INVOICE_2026024_URL en INVOICE_2026025_URL met de public Blob-URL.
  */
 const path = require('path')
 const fs = require('fs')
 
 const INVOICES_DIR = path.join(__dirname, '..', 'invoices')
 
-/** filename → user email (lowercase) */
-const INVOICE_TO_EMAIL = {
-  'invoice-2026024.pdf': 'hortulanusglobalservices@gmail.com',
-  'invoice-2026025.pdf': 'info@responseweerbaarheid.nl',
+/** Meta per factuur: gekoppeld account + optionele Blob-URL */
+const INVOICE_META = {
+  'invoice-2026024.pdf': {
+    email: 'hortulanusglobalservices@gmail.com',
+    // Vercel Blob URL voor factuur 2026024 (Global Services)
+    blobUrl: 'https://ljrg3dxfggxclbw2.public.blob.vercel-storage.com/invoices/invoice-2026024.pdf',
+  },
+  'invoice-2026025.pdf': {
+    email: 'info@responseweerbaarheid.nl',
+    // Vercel Blob URL voor factuur 2026025 (Response Weerbaarheid)
+    blobUrl: 'https://ljrg3dxfggxclbw2.public.blob.vercel-storage.com/invoices/invoice-2026025.pdf',
+  },
 }
 
 /** Accounts met onbetaalde factuur: alleen Dashboard en Facturen klikbaar in sidebar */
 const INVOICE_UNPAID_EMAILS = [
-  'hortulanusglobalservices@gmail.com',  // globalservices
-  'info@responseweerbaarheid.nl',         // weerbaarheid
+  'hortulanusglobalservices@gmail.com', // globalservices
+  'info@responseweerbaarheid.nl', // weerbaarheid
 ]
 
+function normaliseEmail(email) {
+  return (email || '').trim().toLowerCase()
+}
+
+function getInvoiceMeta(filename) {
+  return INVOICE_META[filename] || null
+}
+
 function getInvoicesForEmail(userEmail) {
-  const email = (userEmail || '').trim().toLowerCase()
+  const email = normaliseEmail(userEmail)
   const list = []
-  for (const [filename, assignedEmail] of Object.entries(INVOICE_TO_EMAIL)) {
-    if (assignedEmail === email) {
-      const filePath = path.join(INVOICES_DIR, filename)
-      if (fs.existsSync(filePath)) {
-        list.push({
-          filename,
-          label: filename.replace(/\.pdf$/i, '').replace(/-/g, ' '),
-        })
+  for (const [filename, meta] of Object.entries(INVOICE_META)) {
+    if (meta.email === email) {
+      const label = filename.replace(/\.pdf$/i, '').replace(/-/g, ' ')
+      // Als er een Blob-URL is, gebruiken we die.
+      if (meta.blobUrl) {
+        list.push({ filename, label, url: meta.blobUrl })
+      } else {
+        // Fallback: lokaal bestand uit invoices/
+        const filePath = path.join(INVOICES_DIR, filename)
+        if (fs.existsSync(filePath)) {
+          list.push({ filename, label })
+        }
       }
     }
   }
@@ -38,13 +61,15 @@ function getInvoicesForEmail(userEmail) {
 }
 
 function mayAccessInvoice(filename, userEmail) {
-  const email = (userEmail || '').trim().toLowerCase()
-  const assigned = INVOICE_TO_EMAIL[filename]
-  return assigned === email
+  const email = normaliseEmail(userEmail)
+  const meta = getInvoiceMeta(filename)
+  if (!meta) return false
+  return normaliseEmail(meta.email) === email
 }
 
 function getInvoicePath(filename) {
-  if (!filename || !INVOICE_TO_EMAIL[filename]) return null
+  const meta = getInvoiceMeta(filename)
+  if (!filename || !meta) return null
   const filePath = path.join(INVOICES_DIR, filename)
   if (!fs.existsSync(filePath)) return null
   return filePath
@@ -52,7 +77,7 @@ function getInvoicePath(filename) {
 
 /** Of het account een betaalde factuur heeft (chiel, garage-eelman = betaald; global, weerbaarheid = onbetaald) */
 function isInvoicePaid(userEmail) {
-  const email = (userEmail || '').trim().toLowerCase()
+  const email = normaliseEmail(userEmail)
   return !INVOICE_UNPAID_EMAILS.includes(email)
 }
 
@@ -60,5 +85,6 @@ module.exports = {
   getInvoicesForEmail,
   mayAccessInvoice,
   getInvoicePath,
+  getInvoiceMeta,
   isInvoicePaid,
 }
