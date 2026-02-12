@@ -21,6 +21,8 @@ const SALT_ROUNDS = 10
 const USERS = [
   { email: 'chiel@media2net.nl', password: 'W4t3rk0k3r^', name: null, role: 'admin', status: 'admin' },
   { email: 'info@garage-eelman.nl', password: 'G4r4g3-E3lm4n!Xk9#Qw2', name: null, role: 'lid', status: 'onboarding' },
+  { email: 'hortulanusglobalservices@gmail.com', password: 'H0rtuL4nUs!2026#', name: null, role: 'lid', status: 'onboarding' },
+  { email: 'info@responseweerbaarheid.nl', password: 'R3sp0nse!Weer2026$', name: null, role: 'lid', status: 'onboarding' },
 ]
 
 async function main() {

@@ -6,6 +6,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
 
@@ -81,21 +82,30 @@ export default function LoginPage() {
             <label htmlFor="password" className="block text-sm font-medium text-gray-300">
               Wachtwoord
             </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 text-white placeholder-gray-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-              placeholder="••••••••"
-            />
+            <div className="mt-2 relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="block w-full rounded-lg border border-dark-500 bg-dark-700 px-4 py-3 pr-16 text-white placeholder-gray-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-2 my-1 inline-flex items-center rounded-md px-2 text-xs font-medium text-gray-300 hover:bg-dark-600"
+              >
+                {showPassword ? 'Verberg' : 'Toon'}
+              </button>
+            </div>
           </div>
           <button
             type="submit"
             className="w-full rounded-lg bg-accent py-3.5 font-semibold text-white transition hover:bg-accent-hover"
           >
-            Mijn account
+            Inloggen
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-500">

@@ -21,6 +21,8 @@ import AnalysePage from './pages/AnalysePage'
 import TradeBotPage from './pages/TradeBotPage'
 import DownloadsPage from './pages/DownloadsPage'
 import RegisterPage from './pages/RegisterPage'
+import UsersAdminPage from './pages/UsersAdminPage'
+import FacturenPage from './pages/FacturenPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
@@ -67,6 +69,8 @@ export default function App() {
         <Route path="patronen" element={<PatronenPage />} />
         <Route path="analyse" element={<AnalysePage />} />
         <Route path="trade-bot" element={<TradeBotPage />} />
+        <Route path="facturen" element={<FacturenPage />} />
+        <Route path="users" element={<UsersAdminPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

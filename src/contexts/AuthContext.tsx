@@ -8,6 +8,7 @@ export type AuthUser = {
   name: string | null
   role?: string   // admin | lid
   status?: string // admin | onboarding | active
+  invoicePaid?: boolean // false = alleen Dashboard en Facturen klikbaar
 }
 
 type AuthContextType = {
@@ -64,7 +65,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
       if (json.success && json.data?.user) {
-        setUser(json.data.user)
+        const u = json.data.user
+        const normalized: AuthUser = {
+          id: u.id,
+          email: u.email,
+          name: u.name ?? null,
+          role: typeof u.role === 'string' ? u.role : 'lid',
+          status: typeof u.status === 'string' ? u.status : 'onboarding',
+          invoicePaid: typeof u.invoicePaid === 'boolean' ? u.invoicePaid : true,
+        }
+        setUser(normalized)
+        saveStored(stored.token, normalized)
       } else {
         localStorage.removeItem(AUTH_KEY)
         setUser(null)
@@ -101,8 +112,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       if (json.success && json.data?.token && json.data?.user) {
-        saveStored(json.data.token, json.data.user)
-        setUser(json.data.user)
+        const u = json.data.user
+        const normalized: AuthUser = {
+          id: u.id,
+          email: u.email,
+          name: u.name ?? null,
+          role: typeof u.role === 'string' ? u.role : 'lid',
+          status: typeof u.status === 'string' ? u.status : 'onboarding',
+          invoicePaid: typeof u.invoicePaid === 'boolean' ? u.invoicePaid : true,
+        }
+        saveStored(json.data.token, normalized)
+        setUser(normalized)
         return { success: true }
       }
       return {
@@ -135,8 +155,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: 'Server gaf geen geldig antwoord. Draait de backend op poort 3001?' }
       }
       if (json.success && json.data?.token && json.data?.user) {
-        saveStored(json.data.token, json.data.user)
-        setUser(json.data.user)
+        const u = json.data.user
+        const normalized: AuthUser = {
+          id: u.id,
+          email: u.email,
+          name: u.name ?? null,
+          role: typeof u.role === 'string' ? u.role : 'lid',
+          status: typeof u.status === 'string' ? u.status : 'onboarding',
+          invoicePaid: typeof u.invoicePaid === 'boolean' ? u.invoicePaid : true,
+        }
+        saveStored(json.data.token, normalized)
+        setUser(normalized)
         return { success: true }
       }
       return { success: false, error: json.error || 'Registreren mislukt.' }

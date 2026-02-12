@@ -3,7 +3,11 @@ import { Link } from 'react-router-dom'
 
 export default function OnboardingNoticeBar() {
   const { user } = useAuth()
-  if (user?.status !== 'onboarding') return null
+  if (!user) return null
+  // Admin ziet geen onboarding-bar
+  if (user.role === 'admin') return null
+  // Toon bar bij status 'onboarding' of bij ontbrekende status (backwards compatibility)
+  if (user.status !== 'onboarding' && user.status != null) return null
 
   return (
     <div

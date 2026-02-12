@@ -4,6 +4,9 @@ node_modules/
 # Build
 dist/
 
+# Invoices (PDFs, lokaal)
+invoices/
+
 # Local env
 .env
 .env.local

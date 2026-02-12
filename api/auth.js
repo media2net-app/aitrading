@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { getPrisma, hasDatabase } = require('./db')
+const invoices = require('./invoices')
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production'
 const SALT_ROUNDS = 10
@@ -82,12 +83,17 @@ async function login(req, res) {
       return res.status(401).json({ success: false, error: 'Ongeldige inloggegevens' })
     }
     const token = createToken(user.id, user.email)
+    const safeUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role ?? 'lid',
+      status: user.status ?? 'onboarding',
+      invoicePaid: invoices.isInvoicePaid(user.email),
+    }
     res.json({
       success: true,
-      data: {
-        token,
-        user: { id: user.id, email: user.email, name: user.name, role: user.role, status: user.status },
-      },
+      data: { token, user: safeUser },
     })
   } catch (err) {
     console.error('Login error:', err)
@@ -116,7 +122,15 @@ async function me(req, res) {
     if (!user) {
       return res.status(401).json({ success: false, error: 'Gebruiker niet gevonden' })
     }
-    res.json({ success: true, data: { user } })
+    const safeUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role ?? 'lid',
+      status: user.status ?? 'onboarding',
+      invoicePaid: invoices.isInvoicePaid(user.email),
+    }
+    res.json({ success: true, data: { user: safeUser } })
   } catch (err) {
     console.error('Me error:', err)
     res.status(500).json({ success: false, error: err.message })

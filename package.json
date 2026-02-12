@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "server": "node server.js",
     "server:dev": "npm run build && node server.js",
-    "start:all": "concurrently -n backend,frontend -c blue,green \"node server.js\" \"vite --port 3000\""
+    "start:all": "concurrently --kill-others=false -n backend,frontend -c blue,green \"node server.js\" \"vite --port 3000\""
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",

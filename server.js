@@ -1,4 +1,13 @@
 require('dotenv').config()
+
+// Voorkom dat één uncaught error de hele server stopt
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err)
+})
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled rejection at:', promise, 'reason:', reason)
+})
+
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
@@ -7,6 +16,7 @@ const { getBarsInRange } = require('./api/marketData')
 const { getDailyAnalysis, getDayDetail } = require('./api/analyseService')
 const auth = require('./api/auth')
 const agentHandlers = require('./api/agentHandlers')
+const invoices = require('./api/invoices')
 const { getPrisma, hasDatabase } = require('./api/db')
 
 let emailService = null
@@ -81,6 +91,33 @@ app.post('/api/auth/register', auth.register)
 app.post('/api/auth/login', auth.login)
 app.get('/api/auth/me', auth.me)
 
+// Admin: gebruikersoverzicht
+app.get('/api/admin/users', auth.requireAuth, async (req, res) => {
+  try {
+    const prisma = getPrisma()
+    const me = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { role: true },
+    })
+    if (!me || me.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Alleen voor admins' })
+    }
+    const users = await prisma.user.findMany({
+      orderBy: { email: 'asc' },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        createdAt: true,
+      },
+    })
+    res.json({ success: true, data: users })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
 // User MT5 settings (onboarding: bewaar per gebruiker)
 app.get('/api/user/mt5-settings', auth.requireAuth, async (req, res) => {
   try {
@@ -125,6 +162,29 @@ app.put('/api/user/mt5-settings', auth.requireAuth, async (req, res) => {
       },
     })
     res.json({ success: true, message: 'MT5-gegevens opgeslagen' })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+// Facturen: lijst en download (alleen eigen facturen)
+app.get('/api/user/invoices', auth.requireAuth, (req, res) => {
+  try {
+    const list = invoices.getInvoicesForEmail(req.userEmail)
+    res.json({ success: true, data: { invoices: list } })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+app.get('/api/user/invoices/:filename', auth.requireAuth, (req, res) => {
+  try {
+    const { filename } = req.params
+    if (!invoices.mayAccessInvoice(filename, req.userEmail)) {
+      return res.status(404).json({ success: false, error: 'Factuur niet gevonden' })
+    }
+    const filePath = invoices.getInvoicePath(filename)
+    if (!filePath) return res.status(404).json({ success: false, error: 'Factuur niet gevonden' })
+    res.sendFile(filePath, { headers: { 'Content-Type': 'application/pdf' } })
   } catch (err) {
     res.status(500).json({ success: false, error: err.message })
   }
@@ -318,6 +378,8 @@ if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
   })
+  // Houd event loop actief (voorkom onverwacht exit in achtergrond)
+  setInterval(() => {}, 60000)
 }
 
 module.exports = app
