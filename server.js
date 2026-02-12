@@ -182,6 +182,12 @@ app.get('/api/user/invoices/:filename', auth.requireAuth, (req, res) => {
     if (!invoices.mayAccessInvoice(filename, req.userEmail)) {
       return res.status(404).json({ success: false, error: 'Factuur niet gevonden' })
     }
+    const meta = invoices.getInvoiceMeta(filename)
+    // Als er een Blob-URL is, redirect daarheen
+    if (meta && meta.blobUrl) {
+      return res.redirect(meta.blobUrl)
+    }
+    // Anders fallback naar lokaal bestand uit invoices/
     const filePath = invoices.getInvoicePath(filename)
     if (!filePath) return res.status(404).json({ success: false, error: 'Factuur niet gevonden' })
     res.sendFile(filePath, { headers: { 'Content-Type': 'application/pdf' } })
